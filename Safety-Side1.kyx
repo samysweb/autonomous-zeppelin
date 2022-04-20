@@ -1,0 +1,158 @@
+implyR('R=="p()>r()&r()>0&T()>0&obstacleCondition(v1,v2,o1,o2,c,x1,x2)->[{setEnv{|^@|};ctrl{|^@|};model{|^@|};}*]safety(o1,o2,c,x1,x2)") ; loop("obstacleCondition(v1,v2,o1,o2,c,x1,x2)", 'R=="[{setEnv{|^@|};ctrl{|^@|};model{|^@|};}*]safety(o1,o2,c,x1,x2)") ; <(
+  "Init": auto,
+  "Post": pending("expand \"safety\" ; abbrv(\"x1-o1\", \"a1\") ; abbrv(\"x2-o2\", \"a2\") ; hideL('L==\"a1=x1-o1\") ; hideL('L==\"a2=x2-o2\") ; unfold ; orL('L==\"c*((-c/(p()-r())*v1)*(a1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(a2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*a2-(-c/(p()-r())*v2)*a1)>0.0|c*((-c/(p()-r())*v1)*(a1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(a2--c/(p()-r())*v2))-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*a2-(-c/(p()-r())*v2)*a1)>0.0|(-c/(p()-r())*v1)*(a1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(a2--c/(p()-r())*v2)>0|c/(v1^2+v2^2)^(1/2)*v1*(a1-c/(v1^2+v2^2)^(1/2)*v1)+c/(v1^2+v2^2)^(1/2)*v2*(a2-c/(v1^2+v2^2)^(1/2)*v2)>0\") ; <(
+    \"c*((-c/(p()-r())*v1)*(a1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(a2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*a2-(-c/(p()-r())*v2)*a1)>0.0\": auto,
+    \"c*((-c/(p()-r())*v1)*(a1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(a2--c/(p()-r())*v2))-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*a2-(-c/(p()-r())*v2)*a1)>0.0|(-c/(p()-r())*v1)*(a1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(a2--c/(p()-r())*v2)>0|c/(v1^2+v2^2)^(1/2)*v1*(a1-c/(v1^2+v2^2)^(1/2)*v1)+c/(v1^2+v2^2)^(1/2)*v2*(a2-c/(v1^2+v2^2)^(1/2)*v2)>0\": todo
+  )") ; unfold ; expand "safety" ; abbrv("x1-o1", "a1") ; abbrv("x2-o2", "a2") ; hideL('L=="a1=x1-o1") ; hideL('L=="a2=x2-o2") ; orL('L=="c*((-c/(p()-r())*v1)*(a1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(a2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*a2-(-c/(p()-r())*v2)*a1)>0.0|c*((-c/(p()-r())*v1)*(a1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(a2--c/(p()-r())*v2))-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*a2-(-c/(p()-r())*v2)*a1)>0.0") ; <(
+      "c*((-c/(p()-r())*v1)*(a1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(a2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*a2-(-c/(p()-r())*v2)*a1)>0.0": QE,
+      "c*((-c/(p()-r())*v1)*(a1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(a2--c/(p()-r())*v2))-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*a2-(-c/(p()-r())*v2)*a1)>0.0": QE
+    ),
+  "Step": unfold ; expand "setEnv" ; composeb('R=="[v1:=*;v2:=*;o1:=*;o2:=*;c:=*;?obstacleCondition(v1,v2,o1,o2,c,x1,x2);]#[ctrl{|^@|};model{|^@|};](p() < r()+(v1^2+v2^2)^(1/2)&c>0&(c*((-c/(p()-r())*v1)*(x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(x2-o2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(x2-o2)-(-c/(p()-r())*v2)*(x1-o1))>0.0|c*((-c/(p()-r())*v1)*(x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(x2-o2--c/(p()-r())*v2))-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(x2-o2)-(-c/(p()-r())*v2)*(x1-o1))>0.0))#") ; expand "ctrl" ; expand "model" ; chase('R=="[v1:=*;v2:=*;o1:=*;o2:=*;c:=*;?obstacleCondition(v1,v2,o1,o2,c,x1,x2);][y1:=*;y2:=*;?controllerCondition(v1,v2,o1,o2,c,x1,x2,y1,y2);][{setTurbulence{|^@|};t:=0;}{x1'=v1+p()*y1+r()*z1,x2'=v2+p()*y2+r()*z2,t'=1&t<=T()}](p() < r()+(v1^2+v2^2)^(1/2)&c>0&(c*((-c/(p()-r())*v1)*(x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(x2-o2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(x2-o2)-(-c/(p()-r())*v2)*(x1-o1))>0.0|c*((-c/(p()-r())*v1)*(x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(x2-o2--c/(p()-r())*v2))-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(x2-o2)-(-c/(p()-r())*v2)*(x1-o1))>0.0))") ; expand "setTurbulence" ; chase('R=="\forall v1 \forall v2 \forall o1 \forall o2 \forall c (obstacleCondition(v1,v2,o1,o2,c,x1,x2)->\forall y1 \forall y2 (controllerCondition(v1,v2,o1,o2,c,x1,x2,y1,y2)->[z1:=*;z2:=*;?z1^2+z2^2<=1;]\forall t (t=0->[{x1'=v1+p()*y1+r()*z1,x2'=v2+p()*y2+r()*z2,t'=1&t<=T()}](p() < r()+(v1^2+v2^2)^(1/2)&c>0&(c*((-c/(p()-r())*v1)*(x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(x2-o2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(x2-o2)-(-c/(p()-r())*v2)*(x1-o1))>0.0|c*((-c/(p()-r())*v1)*(x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(x2-o2--c/(p()-r())*v2))-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(x2-o2)-(-c/(p()-r())*v2)*(x1-o1))>0.0)))))") ; unfold ; hideL('L=="c_0*((-c_0/(p()-r())*v1_0)*(x1-o1_0--c_0/(p()-r())*v1_0)+(-c_0/(p()-r())*v2_0)*(x2-o2_0--c_0/(p()-r())*v2_0))+((-c_0/(p()-r())*v1_0)^2+(-c_0/(p()-r())*v2_0)^2-c_0^2)^(1/2)*((-c_0/(p()-r())*v1_0)*(x2-o2_0)-(-c_0/(p()-r())*v2_0)*(x1-o1_0))>0.0|c_0*((-c_0/(p()-r())*v1_0)*(x1-o1_0--c_0/(p()-r())*v1_0)+(-c_0/(p()-r())*v2_0)*(x2-o2_0--c_0/(p()-r())*v2_0))-((-c_0/(p()-r())*v1_0)^2+(-c_0/(p()-r())*v2_0)^2-c_0^2)^(1/2)*((-c_0/(p()-r())*v1_0)*(x2-o2_0)-(-c_0/(p()-r())*v2_0)*(x1-o1_0))>0.0") ; hideL('L=="p() < r()+(v1_0^2+v2_0^2)^(1/2)") ; expand "controllerCondition" ; expand "obstacleCondition" ; expand "obstacleConditionOrigin" ; expand "controllerConditionOrigin" ; unfold
+);
+orL('L=="onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,y1)-push1(c,v1,v2),afterwards(x2-o2,v2,y2)-push2(c,v1,v2),v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)&onSide2(c,afterwards(x1-o1,v1,y1)-side2Push1(c,v1,v2),afterwards(x2-o2,v2,y2)-side2Push2(c,v1,v2),v1,v2)"); <(
+  "onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,y1)-push1(c,v1,v2),afterwards(x2-o2,v2,y2)-push2(c,v1,v2),v1,v2)":
+    hideL('L=="onSide1(c,x1-o1,x2-o2,v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)") ; edit("[{x1'=v1+p()*y1+r()*z1,x2'=v2+p()*y2+r()*z2,t'=1&t<=T()}](p() < r()+(v1^2+v2^2)^(1/2)&c>0&c*((-c/(p()-r())*v1)*(x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(x2-o2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(x2-o2)-(-c/(p()-r())*v2)*(x1-o1))>0.0)", 'R=="[{x1'=v1+p()*y1+r()*z1,x2'=v2+p()*y2+r()*z2,t'=1&t<=T()}](p() < r()+(v1^2+v2^2)^(1/2)&c>0&(c*((-c/(p()-r())*v1)*(x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(x2-o2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(x2-o2)-(-c/(p()-r())*v2)*(x1-o1))>0.0|c*((-c/(p()-r())*v1)*(x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(x2-o2--c/(p()-r())*v2))-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(x2-o2)-(-c/(p()-r())*v2)*(x1-o1))>0.0))") ; cut("c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1-0-0)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2-0-0))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2-0)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1-0))>=0"); <(
+      "Use":
+        dIRule('R=="[{x1'=v1+p()*y1+r()*z1,x2'=v2+p()*y2+r()*z2,t'=1&t<=T()}](p() < r()+(v1^2+v2^2)^(1/2)&c>0&c*((-c/(p()-r())*v1)*(x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(x2-o2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(x2-o2)-(-c/(p()-r())*v2)*(x1-o1))>0.0)"); <(
+          "dI Init":
+            auto,
+          "dI Step":
+            auto
+        ),
+      "Show":
+        cut("c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1-0-0)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2-0-0))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2-0)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1-0)) < 0"); <(
+          "Use":
+            hideR('R=="c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1-0-0)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2-0-0))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2-0)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1-0))>=0");
+            andL('L=="onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,y1)-push1(c,v1,v2),afterwards(x2-o2,v2,y2)-push2(c,v1,v2),v1,v2)");
+            expand "onSide1";
+            expand "afterwards";
+            cut("onSide1Eq(c,x1-o1+T()*(v1+p()*y1)-push1(c,v1,v2),x2-o2+T()*(v2+p()*y2)-push2(c,v1,v2),v1,v2)<=onSide1Eq(c,x1-o1+T()*(v1+p()*y1+r()*z1),x2-o2+T()*(v2+p()*y2+r()*z2),v1,v2)"); <(
+              "Use":
+                solve('R=="[{x1'=v1+p()*y1+r()*z1,x2'=v2+p()*y2+r()*z2,t'=1&t<=T()}](p() < r()+(v1^2+v2^2)^(1/2)&c>0&c*((-c/(p()-r())*v1)*(x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(x2-o2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(x2-o2)-(-c/(p()-r())*v2)*(x1-o1))>0.0)") using "[{x1'=v1+p()*y1+r()*z1,x2'=v2+p()*y2+r()*z2,t'=1&t<=T()}](p() < r()+(v1^2+v2^2)^(1/2)&c>0&c*((-c/(p()-r())*v1)*(x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(x2-o2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(x2-o2)-(-c/(p()-r())*v2)*(x1-o1))>0.0)";
+                unfold;
+                edit("(p() < r()+(v1^2+v2^2)^(1/2)&c>0)&c*((-c/(p()-r())*v1)*((v1+p()*y1+r()*z1)*t_+x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*((v2+p()*y2+r()*z2)*t_+x2-o2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*((v2+p()*y2+r()*z2)*t_+x2-o2)-(-c/(p()-r())*v2)*((v1+p()*y1+r()*z1)*t_+x1-o1))>0", 'R=="p() < r()+(v1^2+v2^2)^(1/2)&c>0&c*((-c/(p()-r())*v1)*((v1+p()*y1+r()*z1)*t_+x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*((v2+p()*y2+r()*z2)*t_+x2-o2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*((v2+p()*y2+r()*z2)*t_+x2-o2)-(-c/(p()-r())*v2)*((v1+p()*y1+r()*z1)*t_+x1-o1))>0");
+                andR('R=="(p() < r()+(v1^2+v2^2)^(1/2)&c>0)&c*((-c/(p()-r())*v1)*((v1+p()*y1+r()*z1)*t_+x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*((v2+p()*y2+r()*z2)*t_+x2-o2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*((v2+p()*y2+r()*z2)*t_+x2-o2)-(-c/(p()-r())*v2)*((v1+p()*y1+r()*z1)*t_+x1-o1))>0"); <(
+                  "p() < r()+(v1^2+v2^2)^(1/2)&c>0":
+                    auto,
+                  "c*((-c/(p()-r())*v1)*((v1+p()*y1+r()*z1)*t_+x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*((v2+p()*y2+r()*z2)*t_+x2-o2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*((v2+p()*y2+r()*z2)*t_+x2-o2)-(-c/(p()-r())*v2)*((v1+p()*y1+r()*z1)*t_+x1-o1))>0":
+                    cut("onSide1Eq(c,x1-o1+t_*(v1+p()*y1+r()*z1),x2-o2+t_*(v2+p()*y2+r()*z2),v1,v2)>0"); <(
+                      "Use":
+                        auto using "onSide1Eq(c,x1-o1+t_*(v1+p()*y1+r()*z1),x2-o2+t_*(v2+p()*y2+r()*z2),v1,v2)>0 :: c*((-c/(p()-r())*v1)*((v1+p()*y1+r()*z1)*t_+x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*((v2+p()*y2+r()*z2)*t_+x2-o2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*((v2+p()*y2+r()*z2)*t_+x2-o2)-(-c/(p()-r())*v2)*((v1+p()*y1+r()*z1)*t_+x1-o1))>0 :: nil",
+                      "Show":
+                        hideR('R=="c*((-c/(p()-r())*v1)*((v1+p()*y1+r()*z1)*t_+x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*((v2+p()*y2+r()*z2)*t_+x2-o2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*((v2+p()*y2+r()*z2)*t_+x2-o2)-(-c/(p()-r())*v2)*((v1+p()*y1+r()*z1)*t_+x1-o1))>0");
+                        cut("t_<=T()"); <(
+                          "Use":
+                            hideL('L=="\forall s_ (0<=s_&s_<=t_->s_+t<=T())");
+                            cut("onSide1Eq(c,x1-o1+t_*(v1+p()*y1+r()*z1),x2-o2+t_*(v2+p()*y2+r()*z2),v1,v2)>=onSide1Eq(c,x1-o1+T()*(v1+p()*y1+r()*z1),x2-o2+T()*(v2+p()*y2+r()*z2),v1,v2)"); <(
+                              "Use":
+                                abbrv("onSide1Eq(c,x1-o1+t_*(v1+p()*y1+r()*z1),x2-o2+t_*(v2+p()*y2+r()*z2),v1,v2)", "g");
+                                abbrv("onSide1Eq(c,x1-o1+T()*(v1+p()*y1+r()*z1),x2-o2+T()*(v2+p()*y2+r()*z2),v1,v2)", "h");
+                                QE using "onSide1Eq(c,x1-o1+T()*(v1+p()*y1)-push1(c,v1,v2),x2-o2+T()*(v2+p()*y2)-push2(c,v1,v2),v1,v2)>0.0 :: onSide1Eq(c,x1-o1+T()*(v1+p()*y1)-push1(c,v1,v2),x2-o2+T()*(v2+p()*y2)-push2(c,v1,v2),v1,v2)<=h :: g>=h :: g>0 :: nil",
+                              "Show":
+                                hideR('R=="onSide1Eq(c,x1-o1+t_*(v1+p()*y1+r()*z1),x2-o2+t_*(v2+p()*y2+r()*z2),v1,v2)>0");
+                                simplify('L=="c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1-0-0)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2-0-0))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2-0)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1-0)) < 0");
+                                abbrv("x1-o1", "a1");
+                                abbrv("x2-o2", "a2");
+                                hideL('L=="a1=x1-o1");
+                                hideL('L=="a2=x2-o2");
+                                hideL('L=="onSide1Eq(c,a1+T()*(v1+p()*y1)-push1(c,v1,v2),a2+T()*(v2+p()*y2)-push2(c,v1,v2),v1,v2)<=onSide1Eq(c,a1+T()*(v1+p()*y1+r()*z1),a2+T()*(v2+p()*y2+r()*z2),v1,v2)");
+                                hideL('L=="onSide1Eq(c,a1+T()*(v1+p()*y1)-push1(c,v1,v2),a2+T()*(v2+p()*y2)-push2(c,v1,v2),v1,v2)>0.0");
+                                cut("onSide1Eq(c,a1+t_*(v1+p()*y1+r()*z1),a2+t_*(v2+p()*y2+r()*z2),v1,v2)=onSide1Eq(c,a1,a2,v1,v2)+onSide1Eq(c,t_*(v1+p()*y1+r()*z1),t_*(v2+p()*y2+r()*z2),v1,v2)+c*(q(c,v1)^2+q(c,v2)^2)"); <(
+                                  "Use":
+                                    allL2R('L=="onSide1Eq(c,a1+t_*(v1+p()*y1+r()*z1),a2+t_*(v2+p()*y2+r()*z2),v1,v2)=onSide1Eq(c,a1,a2,v1,v2)+onSide1Eq(c,t_*(v1+p()*y1+r()*z1),t_*(v2+p()*y2+r()*z2),v1,v2)+c*(q(c,v1)^2+q(c,v2)^2)");
+                                    cut("onSide1Eq(c,a1+T()*(v1+p()*y1+r()*z1),a2+T()*(v2+p()*y2+r()*z2),v1,v2)=onSide1Eq(c,a1,a2,v1,v2)+onSide1Eq(c,T()*(v1+p()*y1+r()*z1),T()*(v2+p()*y2+r()*z2),v1,v2)+c*(q(c,v1)^2+q(c,v2)^2)"); <(
+                                      "Use":
+                                        allL2R('L=="onSide1Eq(c,a1+T()*(v1+p()*y1+r()*z1),a2+T()*(v2+p()*y2+r()*z2),v1,v2)=onSide1Eq(c,a1,a2,v1,v2)+onSide1Eq(c,T()*(v1+p()*y1+r()*z1),T()*(v2+p()*y2+r()*z2),v1,v2)+c*(q(c,v1)^2+q(c,v2)^2)");
+                                        hideL('L=="onSide1Eq(c,a1+t_*(v1+p()*y1+r()*z1),a2+t_*(v2+p()*y2+r()*z2),v1,v2)=onSide1Eq(c,a1,a2,v1,v2)+onSide1Eq(c,t_*(v1+p()*y1+r()*z1),t_*(v2+p()*y2+r()*z2),v1,v2)+c*(q(c,v1)^2+q(c,v2)^2)");
+                                        hideL('L=="onSide1Eq(c,a1+T()*(v1+p()*y1+r()*z1),a2+T()*(v2+p()*y2+r()*z2),v1,v2)=onSide1Eq(c,a1,a2,v1,v2)+onSide1Eq(c,T()*(v1+p()*y1+r()*z1),T()*(v2+p()*y2+r()*z2),v1,v2)+c*(q(c,v1)^2+q(c,v2)^2)");
+                                        abbrv("onSide1Eq(c,a1,a2,v1,v2)", "g");
+                                        abbrv("c*(q(c,v1)^2+q(c,v2)^2)", "i");
+                                        cut("onSide1Eq(c,t_*(v1+p()*y1+r()*z1),t_*(v2+p()*y2+r()*z2),v1,v2)=t_*(c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1)))-c*(q(c,v1)^2+q(c,v2)^2)"); <(
+                                          "Use":
+                                            allL2R('L=="onSide1Eq(c,t_*(v1+p()*y1+r()*z1),t_*(v2+p()*y2+r()*z2),v1,v2)=t_*(c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1)))-c*(q(c,v1)^2+q(c,v2)^2)");
+                                            hideL('L=="onSide1Eq(c,t_*(v1+p()*y1+r()*z1),t_*(v2+p()*y2+r()*z2),v1,v2)=t_*(c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1)))-c*(q(c,v1)^2+q(c,v2)^2)");
+                                            cut("onSide1Eq(c,T()*(v1+p()*y1+r()*z1),T()*(v2+p()*y2+r()*z2),v1,v2)=T()*(c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1)))-c*(q(c,v1)^2+q(c,v2)^2)"); <(
+                                              "Use":
+                                                allL2R('L=="onSide1Eq(c,T()*(v1+p()*y1+r()*z1),T()*(v2+p()*y2+r()*z2),v1,v2)=T()*(c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1)))-c*(q(c,v1)^2+q(c,v2)^2)");
+                                                hideL('L=="onSide1Eq(c,T()*(v1+p()*y1+r()*z1),T()*(v2+p()*y2+r()*z2),v1,v2)=T()*(c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1)))-c*(q(c,v1)^2+q(c,v2)^2)");
+                                                abbrv("c*(q(c,v1)^2+q(c,v2)^2)", "f");
+                                                abbrv("c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1))", "inv");
+                                                QE using "inv < 0 :: t_>=0 :: t_<=T() :: g+(t_*inv-f)+i>=g+(T()*inv-f)+i :: nil",
+                                              "Show":
+                                                auto using "onSide1Eq(c,T()*(v1+p()*y1+r()*z1),T()*(v2+p()*y2+r()*z2),v1,v2)=T()*(c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1)))-c*(q(c,v1)^2+q(c,v2)^2)"
+                                            ),
+                                          "Show":
+                                            auto using "onSide1Eq(c,t_*(v1+p()*y1+r()*z1),t_*(v2+p()*y2+r()*z2),v1,v2)=t_*(c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1)))-c*(q(c,v1)^2+q(c,v2)^2)"
+                                        ),
+                                      "Show":
+                                        auto using "onSide1Eq(c,a1+T()*(v1+p()*y1+r()*z1),a2+T()*(v2+p()*y2+r()*z2),v1,v2)=onSide1Eq(c,a1,a2,v1,v2)+onSide1Eq(c,T()*(v1+p()*y1+r()*z1),T()*(v2+p()*y2+r()*z2),v1,v2)+c*(q(c,v1)^2+q(c,v2)^2)"
+                                    ),
+                                  "Show":
+                                    auto using "onSide1Eq(c,a1+t_*(v1+p()*y1+r()*z1),a2+t_*(v2+p()*y2+r()*z2),v1,v2)=onSide1Eq(c,a1,a2,v1,v2)+onSide1Eq(c,t_*(v1+p()*y1+r()*z1),t_*(v2+p()*y2+r()*z2),v1,v2)+c*(q(c,v1)^2+q(c,v2)^2)"
+                                )
+                            ),
+                          "Show":
+                            hideR('R=="onSide1Eq(c,x1-o1+t_*(v1+p()*y1+r()*z1),x2-o2+t_*(v2+p()*y2+r()*z2),v1,v2)>0");
+                            auto using "T()>0 :: t=0 :: t_>=0 :: \forall s_ (0<=s_&s_<=t_->s_+t<=T()) :: t_<=T() :: nil"
+                        )
+                    )
+                ),
+              "Show":
+                hideR('R=="[{x1'=v1+p()*y1+r()*z1,x2'=v2+p()*y2+r()*z2,t'=1&t<=T()}](p() < r()+(v1^2+v2^2)^(1/2)&c>0&c*((-c/(p()-r())*v1)*(x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(x2-o2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(x2-o2)-(-c/(p()-r())*v2)*(x1-o1))>0.0)");
+                abbrv("x1-o1", "a1");
+                abbrv("x2-o2", "a2");
+                hideL('L=="a1=x1-o1");
+                hideL('L=="a2=x2-o2");
+                hideL('L=="c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1-0-0)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2-0-0))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2-0)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1-0)) < 0");
+                hideL('L=="onSide1Eq(c,a1+T()*(v1+p()*y1)-push1(c,v1,v2),a2+T()*(v2+p()*y2)-push2(c,v1,v2),v1,v2)>0.0");
+                edit("onSide1Eq(c,a1+T()*(v1+p()*y1)-push1(c,v1,v2),a2+T()*(v2+p()*y2)-push2(c,v1,v2),v1,v2)<=onSide1Eq(c,a1+T()*(v1+p()*y1+r()*z1),a2+T()*(v2+p()*y2+r()*z2),v1,v2)", 'R=="onSide1Eq(c,a1+T()*(v1+p()*y1)-push1(c,v1,v2),a2+T()*(v2+p()*y2)-push2(c,v1,v2),v1,v2)<=onSide1Eq(c,a1+T()*(v1+p()*y1+r()*z1),a2+T()*(v2+p()*y2+r()*z2),v1,v2)");
+                cut("onSide1Eq(c,a1+T()*(v1+p()*y1+r()*z1),a2+T()*(v2+p()*y2+r()*z2),v1,v2)=onSide1Eq(c,a1+T()*(v1+p()*y1)+T()*(r()*z1),a2+T()*(v2+p()*y2)+T()*(r()*z2),v1,v2)"); <(
+                  "Use":
+                    allL2R('L=="onSide1Eq(c,a1+T()*(v1+p()*y1+r()*z1),a2+T()*(v2+p()*y2+r()*z2),v1,v2)=onSide1Eq(c,a1+T()*(v1+p()*y1)+T()*(r()*z1),a2+T()*(v2+p()*y2)+T()*(r()*z2),v1,v2)");
+                    hideL('L=="onSide1Eq(c,a1+T()*(v1+p()*y1+r()*z1),a2+T()*(v2+p()*y2+r()*z2),v1,v2)=onSide1Eq(c,a1+T()*(v1+p()*y1)+T()*(r()*z1),a2+T()*(v2+p()*y2)+T()*(r()*z2),v1,v2)");
+                    cut("onSide1Eq(c,a1+T()*(v1+p()*y1)+T()*(r()*z1),a2+T()*(v2+p()*y2)+T()*(r()*z2),v1,v2)=onSide1Eq(c,a1+T()*(v1+p()*y1),a2+T()*(v2+p()*y2),v1,v2)+onSide1Eq(c,T()*(r()*z1),T()*(r()*z2),v1,v2)+c*(q(c,v1)^2+q(c,v2)^2)"); <(
+                      "Use":
+                        allL2R('L=="onSide1Eq(c,a1+T()*(v1+p()*y1)+T()*(r()*z1),a2+T()*(v2+p()*y2)+T()*(r()*z2),v1,v2)=onSide1Eq(c,a1+T()*(v1+p()*y1),a2+T()*(v2+p()*y2),v1,v2)+onSide1Eq(c,T()*(r()*z1),T()*(r()*z2),v1,v2)+c*(q(c,v1)^2+q(c,v2)^2)");
+                        cut("onSide1Eq(c,a1+T()*(v1+p()*y1)-push1(c,v1,v2),a2+T()*(v2+p()*y2)-push2(c,v1,v2),v1,v2)=onSide1Eq(c,a1+T()*(v1+p()*y1),a2+T()*(v2+p()*y2),v1,v2)+onSide1Eq(c,-push1(c,v1,v2),-push2(c,v1,v2),v1,v2)+c*(q(c,v1)^2+q(c,v2)^2)"); <(
+                          "Use":
+                            allL2R('L=="onSide1Eq(c,a1+T()*(v1+p()*y1)-push1(c,v1,v2),a2+T()*(v2+p()*y2)-push2(c,v1,v2),v1,v2)=onSide1Eq(c,a1+T()*(v1+p()*y1),a2+T()*(v2+p()*y2),v1,v2)+onSide1Eq(c,-push1(c,v1,v2),-push2(c,v1,v2),v1,v2)+c*(q(c,v1)^2+q(c,v2)^2)");
+                            hideL('L=="onSide1Eq(c,a1+T()*(v1+p()*y1)-push1(c,v1,v2),a2+T()*(v2+p()*y2)-push2(c,v1,v2),v1,v2)=onSide1Eq(c,a1+T()*(v1+p()*y1),a2+T()*(v2+p()*y2),v1,v2)+onSide1Eq(c,-push1(c,v1,v2),-push2(c,v1,v2),v1,v2)+c*(q(c,v1)^2+q(c,v2)^2)");
+                            hideL('L=="onSide1Eq(c,a1+T()*(v1+p()*y1)+T()*(r()*z1),a2+T()*(v2+p()*y2)+T()*(r()*z2),v1,v2)=onSide1Eq(c,a1+T()*(v1+p()*y1),a2+T()*(v2+p()*y2),v1,v2)+onSide1Eq(c,T()*(r()*z1),T()*(r()*z2),v1,v2)+c*(q(c,v1)^2+q(c,v2)^2)");
+                            abbrv("onSide1Eq(c,a1+T()*(v1+p()*y1),a2+T()*(v2+p()*y2),v1,v2)", "g");
+                            abbrv("c*(q(c,v1)^2+q(c,v2)^2)", "i");
+                            cut("onSide1Eq(c,-push1(c,v1,v2),-push2(c,v1,v2),v1,v2)<=onSide1Eq(c,T()*(r()*z1),T()*(r()*z2),v1,v2)"); <(
+                              "Use":
+                                hideL('L=="g=onSide1Eq(c,a1+T()*(v1+p()*y1),a2+T()*(v2+p()*y2),v1,v2)");
+                                hideL('L=="i=c*(q(c,v1)^2+q(c,v2)^2)");
+                                QE,
+                              "Show":
+                                hideR('R=="g+onSide1Eq(c,-push1(c,v1,v2),-push2(c,v1,v2),v1,v2)+i<=g+onSide1Eq(c,T()*(r()*z1),T()*(r()*z2),v1,v2)+i");
+                                hideL('L=="g=onSide1Eq(c,a1+T()*(v1+p()*y1),a2+T()*(v2+p()*y2),v1,v2)");
+                                hideL('L=="i=c*(q(c,v1)^2+q(c,v2)^2)");
+                                expandAllDefs;
+                                hideL('L=="c*((-c/(p()-r())*v1)*(a1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(a2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*a2-(-c/(p()-r())*v2)*a1)>0.0");
+                                QE
+                            ),
+                          "Show":
+                            hideR('R=="onSide1Eq(c,a1+T()*(v1+p()*y1)-push1(c,v1,v2),a2+T()*(v2+p()*y2)-push2(c,v1,v2),v1,v2)<=onSide1Eq(c,a1+T()*(v1+p()*y1),a2+T()*(v2+p()*y2),v1,v2)+onSide1Eq(c,T()*(r()*z1),T()*(r()*z2),v1,v2)+c*(q(c,v1)^2+q(c,v2)^2)");
+                            hideL('L=="onSide1Eq(c,a1+T()*(v1+p()*y1)+T()*(r()*z1),a2+T()*(v2+p()*y2)+T()*(r()*z2),v1,v2)=onSide1Eq(c,a1+T()*(v1+p()*y1),a2+T()*(v2+p()*y2),v1,v2)+onSide1Eq(c,T()*(r()*z1),T()*(r()*z2),v1,v2)+c*(q(c,v1)^2+q(c,v2)^2)");
+                            hideL('L=="onSide1Eq(c,a1,a2,v1,v2)>0.0");
+                            auto
+                        ),
+                      "Show":
+                        hideR('R=="onSide1Eq(c,a1+T()*(v1+p()*y1)-push1(c,v1,v2),a2+T()*(v2+p()*y2)-push2(c,v1,v2),v1,v2)<=onSide1Eq(c,a1+T()*(v1+p()*y1)+T()*(r()*z1),a2+T()*(v2+p()*y2)+T()*(r()*z2),v1,v2)");
+                        hideL('L=="onSide1Eq(c,a1,a2,v1,v2)>0.0");
+                        auto
+                    ),
+                  "Show":
+                    hideR('R=="onSide1Eq(c,a1+T()*(v1+p()*y1)-push1(c,v1,v2),a2+T()*(v2+p()*y2)-push2(c,v1,v2),v1,v2)<=onSide1Eq(c,a1+T()*(v1+p()*y1+r()*z1),a2+T()*(v2+p()*y2+r()*z2),v1,v2)");
+                    auto
+                )
+            ),
+          "Show":
+            hideR('R=="[{x1'=v1+p()*y1+r()*z1,x2'=v2+p()*y2+r()*z2,t'=1&t<=T()}](p() < r()+(v1^2+v2^2)^(1/2)&c>0&c*((-c/(p()-r())*v1)*(x1-o1--c/(p()-r())*v1)+(-c/(p()-r())*v2)*(x2-o2--c/(p()-r())*v2))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(x2-o2)-(-c/(p()-r())*v2)*(x1-o1))>0.0)") ; abbrv("c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1-0-0)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2-0-0))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2-0)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1-0))", "g") using "c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1-0-0)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2-0-0))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2-0)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1-0))>=0 :: c*((-c/(p()-r())*v1)*(v1+p()*y1+r()*z1-0-0)+(-c/(p()-r())*v2)*(v2+p()*y2+r()*z2-0-0))+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*((-c/(p()-r())*v1)*(v2+p()*y2+r()*z2-0)-(-c/(p()-r())*v2)*(v1+p()*y1+r()*z1-0)) < 0 :: nil" ; QE using "g>=0 :: g < 0 :: nil"
+        )
+    ),
+  "onSide2(c,x1-o1,x2-o2,v1,v2)&onSide2(c,afterwards(x1-o1,v1,y1)-side2Push1(c,v1,v2),afterwards(x2-o2,v2,y2)-side2Push2(c,v1,v2),v1,v2)":
+    todo
+)
