@@ -1,0 +1,277 @@
+SharedDefinitions
+  Real p;
+  Real r;
+  Real T;
+  Real norm(Real x, Real y) = (x^2+y^2)^(1/2);
+  Real sp(Real x1, Real x2, Real y1, Real y2) = x1*y1 + x2*y2;
+  Bool slipstream(
+        Real x1,
+        Real x2,
+        Real c1,
+        Real c2,
+        Real w,
+        Real v1,
+        Real v2) <-> (
+            sp(x1,x2,-v1,-v2)<=-c2
+        );
+  Bool farAway(
+        Real x1,
+        Real x2,
+        Real c1,
+        Real c2,
+        Real w,
+        Real v1,
+        Real v2) <-> (
+            sp(x1,x2,-v1,-v2)>(c2+(w/(p-r))*c1)
+        );
+  Bool onSideGeneric(
+        Real x1,
+        Real x2,
+        Real c1,
+        Real c2,
+        Real w,
+        Real v1,
+        Real v2,
+        Real f) <-> (
+            f*sp(x1,x2,v2,-v1)-((p-r)/w * (c2-sp(x1,x2,-v1,-v2)) + c1) >= 0
+        );
+  Bool onSide1(
+        Real x1,
+        Real x2,
+        Real c1,
+        Real c2,
+        Real w,
+        Real v1,
+        Real v2) <-> onSideGeneric(x1, x2, c1, c2, w, v1, v2, 1.0);
+  Bool onSide2(
+        Real x1,
+        Real x2,
+        Real c1,
+        Real c2,
+        Real w,
+        Real v1,
+        Real v2) <-> onSideGeneric(x1, x2, c1, c2, w, v1, v2, -1.0);
+  Bool outsideDanger(
+        Real x1,
+        Real x2,
+        Real c1,
+        Real c2,
+        Real w,
+        Real v1,
+        Real v2) <-> w>0&c1>0&c2>0&(
+            slipstream(x1, x2, c1, c2, w, v1, v2) |
+            farAway(x1, x2, c1, c2, w, v1, v2) |
+            onSide1(x1, x2, c1, c2, w, v1, v2) |
+            onSide2(x1, x2, c1, c2, w, v1, v2)
+        );
+  Bool outsideDangerWindSystem(
+        Real x1,
+        Real x2,
+        Real c1,
+        Real c2,
+        Real w) <-> (
+            outsideDanger(x1,x2,c1,c2,w,0.0,-1.0)
+        );
+  Bool outsideObstacle(
+        Real x1,
+        Real x2,
+        Real c1,
+        Real c2) <-> (
+            x1 <= -c1 | c1 <= x1 |
+            x2 <= -c2 | c2 <= x2
+        );
+  Bool outsideDangerAnySystem(
+        Real x1,
+        Real x2,
+        Real c1,
+        Real c2,
+        Real o1,
+        Real o2,
+        Real v1,
+        Real v2) <-> outsideDanger(
+                x1-o1,
+                x2-o2,
+                c1,
+                c2,
+                norm(v1,v2),
+                v1/norm(v1,v2),
+                v2/norm(v1,v2)
+            );
+  Bool obstacleParamCondition(
+        Real x1,
+        Real x2,
+        Real c1,
+        Real c2,
+        Real o1,
+        Real o2,
+        Real v1,
+        Real v2) <-> (
+            p-r < norm(v1,v2) & c1>0 & c2>0 &
+            outsideDangerAnySystem(x1,x2,c1,c2,o1,o2,v1,v2)
+        );
+  Real afterwards1(Real x, Real y, Real w) = x+T*p*y;
+  Real afterwards2(Real x, Real y, Real w) = x+T*p*y-T*w;
+  Bool controllerCondition(
+        Real x1,
+        Real x2,
+        Real y1,
+        Real y2,
+        Real c1,
+        Real c2,
+        Real w) <-> (
+            y1^2+y2^2<=1 & (
+                (
+                    slipstream(x1, x2, c1, c2, w, 0.0, -1.0) ->
+                    slipstream(afterwards1(x1,y1,w),afterwards2(x2,y2,w)+T*r,c1,c2,w,0.0,-1.0)
+                ) & (
+                    farAway(x1, x2, c1, c2, w, 0.0, -1.0) ->
+                    farAway(afterwards1(x1,y1,w),afterwards2(x2,y2,w)-T*r,c1,c2,w,0.0,-1.0)
+                ) & (
+                    onSide1(x1, x2, c1, c2, w, 0.0, -1.0) ->
+                    onSide1(afterwards1(x1,y1,w)+T*r,afterwards2(x2,y2,w)-T*r,c1,c2,w,0.0,-1.0)
+                ) & (
+                    onSide2(x1, x2, c1, c2, w, 0.0, -1.0) ->
+                    onSide2(afterwards1(x1,y1,w)-T*r,afterwards2(x2,y2,w)-T*r,c1,c2,w,0.0,-1.0)
+                )
+            )
+        );
+  HP performBaseChange ::= {
+        /* Center around obstacle */
+        x1 := x1 - o1;
+        x2 := x2 - o2;
+        o1 := 0;
+        o2 := 0;
+        /* Rotate along wind axis.
+           This means for wind direction (v1,v2) we obtain the new bases:
+           b1 = norm((v2, -v1))
+           b2 = norm((-v1,-v2))
+        */
+        w := norm(v1,v2);
+        x1cp := sp(x1, x2, v2/w, -v1/w);
+        x2cp := sp(x1, x2, -v1/w, -v2/w);
+        x1 := x1cp;
+        x2 := x2cp;
+        v1 := 0;
+        v2 := -1.0;
+    };
+  HP setEnv ::= {
+        v1 := *; v2 := *;
+        o1 := *; o2 := *;
+        c1 := *; c2 := *;
+        ?(obstacleParamCondition(x1, x2, c1, c2, o1, o2, v1, v2));
+    };
+  HP ctrl ::= {
+        y1 := *;
+        y2 := *;
+        ?(controllerCondition(x1,x2,y1,y2,c1,c2,w));
+    };
+  HP setTurbulence ::= {
+        z1 := *; z2 := *;
+        ?(z1^2+z2^2<=1);
+    };
+  HP model ::= {
+        {
+            setTurbulence;
+            t:=0;
+        };
+        {x1'=p*y1+r*z1, x2'=-w+p*y2+r*z2, t'=1 & t <= T }
+    };
+End.
+Lemma "ZeppelinV3/baseChangePreservation"
+ProgramVariables
+    /* IN */
+    /* Zeppelin Position */
+    Real x1;
+    Real x2;
+    /* Obstacle size */
+    Real c1;
+    Real c2;
+    /* Wind velocity */
+    Real w;
+    
+    /* OUT */
+    /* Zeppelin Velocity */
+    Real y1;
+    Real y2;
+    
+    /* Intermediate */
+    Real x1cp;
+    Real x2cp;
+    /* New obstacle position */
+    Real o1;
+    Real o2;
+    /* New wind direction & strength */
+    Real v1;
+    Real v2;
+    /* Turbulence direction & strength */
+    Real z1;
+    Real z2;
+    
+    /* Clock */
+    Real t;
+    
+    
+End.
+Problem
+[setEnv;][performBaseChange;] outsideDangerWindSystem(x1,x2,c1,c2,w)
+End.
+Tactic "Base Change Preservation Proof"
+expand "setEnv";
+expand "performBaseChange";
+unfold;
+expand "obstacleParamCondition";
+unfold;
+allL2R('L=="x2cp=sp(x1_1,x2,-v1/w,-v2/w)");
+hideL('L=="x2cp=sp(x1_1,x2,-v1/w,-v2/w)");
+allL2R('L=="x1=sp(x1_1,x2,v2/w,-v1/w)");
+hideL('L=="x1=sp(x1_1,x2,v2/w,-v1/w)");
+allL2R('L=="x1_1=x1_0-o1");
+hideL('L=="x1_1=x1_0-o1");
+allL2R('L=="x2=x2_0-o2");
+hideL('L=="x2=x2_0-o2");
+expand "outsideDangerAnySystem";
+expand "outsideDanger";
+expand "outsideDangerWindSystem";
+expand "outsideDanger";
+unfold; <(
+  "w>0":
+    auto,
+  "slipstream(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))|farAway(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))|onSide1(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))|onSide2(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))":
+    orL('L=="slipstream(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|farAway(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|onSide1(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|onSide2(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))"); <(
+      "slipstream(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))":
+        hideR('R=="onSide2(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+        hideR('R=="onSide1(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+        hideR('R=="farAway(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+        expandAllDefs;
+        QE,
+      "farAway(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|onSide1(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|onSide2(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))":
+        orL('L=="farAway(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|onSide1(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|onSide2(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))"); <(
+          "farAway(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))":
+            hideR('R=="onSide2(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+            hideR('R=="slipstream(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+            hideR('R=="onSide1(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+            expandAllDefs;
+            fullSimplify;
+            QE,
+          "onSide1(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|onSide2(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))":
+            orL('L=="onSide1(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|onSide2(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))"); <(
+              "onSide1(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))":
+                hideR('R=="slipstream(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+                hideR('R=="farAway(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+                hideR('R=="onSide1(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+                expandAllDefs;
+                fullSimplify;
+                QE,
+              "onSide2(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))":
+                hideR('R=="slipstream(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+                hideR('R=="farAway(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+                hideR('R=="onSide2(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+                expandAllDefs;
+                fullSimplify;
+                QE
+            )
+        )
+    )
+)
+End.
+End.
