@@ -12,7 +12,7 @@ SharedDefinitions
         Real w,
         Real v1,
         Real v2) <-> (
-            sp(x1,x2,v1,v2)>=c2
+            sp(x1,x2,-v1,-v2)<=-c2
         );
   Bool farAway(
         Real x1,
@@ -22,7 +22,7 @@ SharedDefinitions
         Real w,
         Real v1,
         Real v2) <-> (
-            sp(x1,x2,v1,v2)<=(-c2-(w/(p-r))*c1)
+            sp(x1,x2,-v1,-v2)>(c2+(w/(p-r))*c1)
         );
   Bool onSideGeneric(
         Real x1,
@@ -33,9 +33,7 @@ SharedDefinitions
         Real v1,
         Real v2,
         Real f) <-> (
-            sp(x1,x2,v1,v2) <= c2 &
-            sp(x1,x2,v1,v2) >= (-c2-(w/(p-r))*c1) &
-            f*sp(x1,x2,-v2,v1)-((p-r)/w * (c2-sp(x1,x2,v1,v2)) + c1) >= 0
+            f*sp(x1,x2,v2,-v1)-((p-r)/w * (c2-sp(x1,x2,-v1,-v2)) + c1) >= 0
         );
   Bool onSide1(
         Real x1,
@@ -130,10 +128,10 @@ SharedDefinitions
                     farAway(afterwards1(x1,y1,w),afterwards2(x2,y2,w)-T*r,c1,c2,w,0.0,-1.0)
                 ) | (
                     onSide1(x1, x2, c1, c2, w, 0.0, -1.0) &
-                    onSide1(afterwards1(x1,y1,w)-T*r,afterwards2(x2,y2,w)-T*r,c1,c2,w,0.0,-1.0)
+                    onSide1(afterwards1(x1,y1,w)+T*r,afterwards2(x2,y2,w)-T*r,c1,c2,w,0.0,-1.0)
                 ) | (
                     onSide2(x1, x2, c1, c2, w, 0.0, -1.0) &
-                    onSide2(afterwards1(x1,y1,w)+T*r,afterwards2(x2,y2,w)-T*r,c1,c2,w,0.0,-1.0)
+                    onSide2(afterwards1(x1,y1,w)-T*r,afterwards2(x2,y2,w)-T*r,c1,c2,w,0.0,-1.0)
                 )
             )
         );
@@ -179,7 +177,233 @@ SharedDefinitions
         {x1'=p*y1+r*z1, x2'=-w+p*y2+r*z2, t'=1 & t <= T }
     };
 End.
-Theorem "ZeppelinV3/Safety"
+Lemma "ZeppelinBox/baseChangePreservation"
+ProgramVariables
+    /* IN */
+    /* Zeppelin Position */
+    Real x1;
+    Real x2;
+    /* Obstacle size */
+    Real c1;
+    Real c2;
+    /* Wind velocity */
+    Real w;
+    
+    /* OUT */
+    /* Zeppelin Velocity */
+    Real y1;
+    Real y2;
+    
+    /* Intermediate */
+    Real x1cp;
+    Real x2cp;
+    /* New obstacle position */
+    Real o1;
+    Real o2;
+    /* New wind direction & strength */
+    Real v1;
+    Real v2;
+    /* Turbulence direction & strength */
+    Real z1;
+    Real z2;
+    
+    /* Clock */
+    Real t;
+    
+    
+End.
+Problem
+[setEnv;][performBaseChange;] outsideDangerWindSystem(x1,x2,c1,c2,w)
+End.
+Tactic "Base Change Preservation Proof"
+expand "setEnv";
+expand "performBaseChange";
+unfold;
+expand "obstacleParamCondition";
+unfold;
+allL2R('L=="x2cp=sp(x1_1,x2,-v1/w,-v2/w)");
+hideL('L=="x2cp=sp(x1_1,x2,-v1/w,-v2/w)");
+allL2R('L=="x1=sp(x1_1,x2,v2/w,-v1/w)");
+hideL('L=="x1=sp(x1_1,x2,v2/w,-v1/w)");
+allL2R('L=="x1_1=x1_0-o1");
+hideL('L=="x1_1=x1_0-o1");
+allL2R('L=="x2=x2_0-o2");
+hideL('L=="x2=x2_0-o2");
+expand "outsideDangerAnySystem";
+expand "outsideDanger";
+expand "outsideDangerWindSystem";
+expand "outsideDanger";
+unfold; <(
+  "w>0":
+    auto,
+  "slipstream(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))|farAway(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))|onSide1(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))|onSide2(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))":
+    orL('L=="slipstream(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|farAway(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|onSide1(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|onSide2(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))"); <(
+      "slipstream(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))":
+        hideR('R=="onSide2(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+        hideR('R=="onSide1(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+        hideR('R=="farAway(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+        expandAllDefs;
+        QE,
+      "farAway(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|onSide1(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|onSide2(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))":
+        orL('L=="farAway(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|onSide1(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|onSide2(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))"); <(
+          "farAway(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))":
+            hideR('R=="onSide2(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+            hideR('R=="slipstream(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+            hideR('R=="onSide1(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+            expandAllDefs;
+            fullSimplify;
+            QE,
+          "onSide1(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|onSide2(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))":
+            orL('L=="onSide1(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))|onSide2(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))"); <(
+              "onSide1(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))":
+                hideR('R=="slipstream(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+                hideR('R=="farAway(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+                hideR('R=="onSide1(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+                expandAllDefs;
+                fullSimplify;
+                QE,
+              "onSide2(x1_0-o1,x2_0-o2,c1,c2,norm(v1,v2),v1/norm(v1,v2),v2/norm(v1,v2))":
+                hideR('R=="slipstream(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+                hideR('R=="farAway(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+                hideR('R=="onSide2(sp(x1_0-o1,x2_0-o2,v2/w,-v1/w),sp(x1_0-o1,x2_0-o2,-v1/w,-v2/w),c1,c2,w,0.0,(-1.0))");
+                expandAllDefs;
+                fullSimplify;
+                QE
+            )
+        )
+    )
+)
+End.
+End.
+Lemma "ZeppelinBox/controllerPreservation"
+ProgramVariables
+    /* IN */
+    /* Zeppelin Position */
+    Real x1;
+    Real x2;
+    /* Obstacle size */
+    Real c1;
+    Real c2;
+    /* Wind velocity */
+    Real w;
+    
+    /* OUT */
+    /* Zeppelin Velocity */
+    Real y1;
+    Real y2;
+    
+    /* Intermediate */
+    /* Turbulence direction & strength */
+    Real z1;
+    Real z2;
+    
+    /* Clock */
+    Real t;
+End.
+Problem
+(p > r & r > 0 & T > 0 & outsideDangerWindSystem(x1,x2,c1,c2,w))
+->
+[ctrl;][model;]outsideDangerWindSystem(x1,x2,c1,c2,w)
+End.
+Tactic "Safety Preservation Proof"
+unfold;
+expand "ctrl";
+expand "model";
+composeb('R=="[y1:=*;y2:=*;?controllerCondition(x1,x2,y1,y2,c1,c2,w);]#[{setTurbulence{|^@|};t:=0;}{x1'=p()*y1+r()*z1,x2'=-w+p()*y2+r()*z2,t'=1&t<=T()}]outsideDangerWindSystem(x1,x2,c1,c2,w)#");
+composeb('R=="[y1:=*;y2:=*;?controllerCondition(x1,x2,y1,y2,c1,c2,w);]#[setTurbulence{|^@|};t:=0;][{x1'=p()*y1+r()*z1,x2'=-w+p()*y2+r()*z2,t'=1&t<=T()}]outsideDangerWindSystem(x1,x2,c1,c2,w)#");
+expand "setTurbulence";
+unfold;
+expand "outsideDangerWindSystem";
+expand "outsideDanger";
+unfold;
+expand "controllerCondition";
+unfold;
+hideL('L=="slipstream(x1,x2,c1,c2,w,0.0,(-1.0))|farAway(x1,x2,c1,c2,w,0.0,(-1.0))|onSide1(x1,x2,c1,c2,w,0.0,(-1.0))|onSide2(x1,x2,c1,c2,w,0.0,(-1.0))");
+orL('L=="slipstream(x1,x2,c1,c2,w,0.0,(-1.0))&slipstream(afterwards1(x1,y1,w),afterwards2(x2,y2,w)+T()*r(),c1,c2,w,0.0,(-1.0))|farAway(x1,x2,c1,c2,w,0.0,(-1.0))&farAway(afterwards1(x1,y1,w),afterwards2(x2,y2,w)-T()*r(),c1,c2,w,0.0,(-1.0))|onSide1(x1,x2,c1,c2,w,0.0,(-1.0))&onSide1(afterwards1(x1,y1,w)+T()*r(),afterwards2(x2,y2,w)-T()*r(),c1,c2,w,0.0,(-1.0))|onSide2(x1,x2,c1,c2,w,0.0,(-1.0))&onSide2(afterwards1(x1,y1,w)-T()*r(),afterwards2(x2,y2,w)-T()*r(),c1,c2,w,0.0,(-1.0))"); <(
+  "slipstream(x1,x2,c1,c2,w,0.0,(-1.0))&slipstream(afterwards1(x1,y1,w),afterwards2(x2,y2,w)+T()*r(),c1,c2,w,0.0,(-1.0))":
+    MR("w>0&c1>0&c2>0&slipstream(x1,x2,c1,c2,w,0.0,(-1.0))", 'R=="[{x1'=p()*y1+r()*z1,x2'=-w+p()*y2+r()*z2,t'=1&t<=T()}](w>0&c1>0&c2>0&(slipstream(x1,x2,c1,c2,w,0.0,(-1.0))|farAway(x1,x2,c1,c2,w,0.0,(-1.0))|onSide1(x1,x2,c1,c2,w,0.0,(-1.0))|onSide2(x1,x2,c1,c2,w,0.0,(-1.0))))") ; <(
+    "Use Q->P": cut("!!-w+p()*y2+r()*z2<=0") ; <(
+        "Use": dIRule('R=="[{x1'=p()*y1+r()*z1,x2'=-w+p()*y2+r()*z2,t'=1&t<=T()}](w>0&c1>0&c2>0&slipstream(x1,x2,c1,c2,w,0.0,(-1.0)))") ; <(
+            "dI Init": auto,
+            "dI Step": auto
+          ),
+        "Show": notR('R=="!!-w+p()*y2+r()*z2<=0") ; notLessEqual('L=="!-w+p()*y2+r()*z2<=0") ; solve('R=="[{x1'=p()*y1+r()*z1,x2'=-w+p()*y2+r()*z2,t'=1&t<=T()}](w>0&c1>0&c2>0&slipstream(x1,x2,c1,c2,w,0.0,(-1.0)))") ; unfold ; expand "slipstream" ; expand "sp" ; fullSimplify ; expand "afterwards2" ; fullSimplify ; QE
+      ),
+    "Show [a]Q": auto
+  ),
+  "farAway(x1,x2,c1,c2,w,0.0,(-1.0))&farAway(afterwards1(x1,y1,w),afterwards2(x2,y2,w)-T()*r(),c1,c2,w,0.0,(-1.0))|onSide1(x1,x2,c1,c2,w,0.0,(-1.0))&onSide1(afterwards1(x1,y1,w)+T()*r(),afterwards2(x2,y2,w)-T()*r(),c1,c2,w,0.0,(-1.0))|onSide2(x1,x2,c1,c2,w,0.0,(-1.0))&onSide2(afterwards1(x1,y1,w)-T()*r(),afterwards2(x2,y2,w)-T()*r(),c1,c2,w,0.0,(-1.0))":
+    orL('L=="farAway(x1,x2,c1,c2,w,0.0,(-1.0))&farAway(afterwards1(x1,y1,w),afterwards2(x2,y2,w)-T()*r(),c1,c2,w,0.0,(-1.0))|onSide1(x1,x2,c1,c2,w,0.0,(-1.0))&onSide1(afterwards1(x1,y1,w)+T()*r(),afterwards2(x2,y2,w)-T()*r(),c1,c2,w,0.0,(-1.0))|onSide2(x1,x2,c1,c2,w,0.0,(-1.0))&onSide2(afterwards1(x1,y1,w)-T()*r(),afterwards2(x2,y2,w)-T()*r(),c1,c2,w,0.0,(-1.0))"); <(
+      "farAway(x1,x2,c1,c2,w,0.0,(-1.0))&farAway(afterwards1(x1,y1,w),afterwards2(x2,y2,w)-T()*r(),c1,c2,w,0.0,(-1.0))":
+        MR("w>0&c1>0&c2>0&farAway(x1,x2,c1,c2,w,0.0,(-1.0))", 'R=="[{x1'=p()*y1+r()*z1,x2'=-w+p()*y2+r()*z2,t'=1&t<=T()}](w>0&c1>0&c2>0&(slipstream(x1,x2,c1,c2,w,0.0,(-1.0))|farAway(x1,x2,c1,c2,w,0.0,(-1.0))|onSide1(x1,x2,c1,c2,w,0.0,(-1.0))|onSide2(x1,x2,c1,c2,w,0.0,(-1.0))))") ; <(
+      "Use Q->P": unfold ; cut("!!-w+p()*y2+r()*z2>=0") ; <(
+          "Use": dIRule('R=="[{x1'=p()*y1+r()*z1,x2'=-w+p()*y2+r()*z2,t'=1&t<=T()}](w>0&c1>0&c2>0&farAway(x1,x2,c1,c2,w,0.0,(-1.0)))") ; <(
+              "dI Init": auto,
+              "dI Step": auto
+            ),
+          "Show": notR('R=="!!-w+p()*y2+r()*z2>=0") ; notGreaterEqual('L=="!-w+p()*y2+r()*z2>=0") ; solve('R=="[{x1'=p()*y1+r()*z1,x2'=-w+p()*y2+r()*z2,t'=1&t<=T()}](w>0&c1>0&c2>0&farAway(x1,x2,c1,c2,w,0.0,(-1.0)))") ; unfold ; expand "farAway" ; expand "sp" ; fullSimplify ; expand "afterwards2" ; QE
+        ),
+      "Show [a]Q": auto
+    ),
+      "onSide1(x1,x2,c1,c2,w,0.0,(-1.0))&onSide1(afterwards1(x1,y1,w)+T()*r(),afterwards2(x2,y2,w)-T()*r(),c1,c2,w,0.0,(-1.0))|onSide2(x1,x2,c1,c2,w,0.0,(-1.0))&onSide2(afterwards1(x1,y1,w)-T()*r(),afterwards2(x2,y2,w)-T()*r(),c1,c2,w,0.0,(-1.0))":
+        orL('L=="onSide1(x1,x2,c1,c2,w,0.0,(-1.0))&onSide1(afterwards1(x1,y1,w)+T()*r(),afterwards2(x2,y2,w)-T()*r(),c1,c2,w,0.0,(-1.0))|onSide2(x1,x2,c1,c2,w,0.0,(-1.0))&onSide2(afterwards1(x1,y1,w)-T()*r(),afterwards2(x2,y2,w)-T()*r(),c1,c2,w,0.0,(-1.0))"); <(
+          "onSide1(x1,x2,c1,c2,w,0.0,(-1.0))&onSide1(afterwards1(x1,y1,w)+T()*r(),afterwards2(x2,y2,w)-T()*r(),c1,c2,w,0.0,(-1.0))":
+            unfold ; MR("w>0&c1>0&c2>0&onSide1(x1,x2,c1,c2,w,0.0,(-1.0))", 'R=="[{x1'=p()*y1+r()*z1,x2'=-w+p()*y2+r()*z2,t'=1&t<=T()}](w>0&c1>0&c2>0&(slipstream(x1,x2,c1,c2,w,0.0,(-1.0))|farAway(x1,x2,c1,c2,w,0.0,(-1.0))|onSide1(x1,x2,c1,c2,w,0.0,(-1.0))|onSide2(x1,x2,c1,c2,w,0.0,(-1.0))))") ; <(
+        "Use Q->P": cut("!!-(p()*y1+r()*z1)-(p()-r())/w*(-(-w+p()*y2+r()*z2))>=0") ; <(
+            "Use": dIRule('R=="[{x1'=p()*y1+r()*z1,x2'=-w+p()*y2+r()*z2,t'=1&t<=T()}](w>0&c1>0&c2>0&onSide1(x1,x2,c1,c2,w,0.0,(-1.0)))") ; <(
+                "dI Init": auto,
+                "dI Step": auto
+              ),
+            "Show": notR('R=="!!-(p()*y1+r()*z1)-(p()-r())/w*(-(-w+p()*y2+r()*z2))>=0") ; notGreaterEqual('L=="!-(p()*y1+r()*z1)-(p()-r())/w*(-(-w+p()*y2+r()*z2))>=0") ; solve('R=="[{x1'=p()*y1+r()*z1,x2'=-w+p()*y2+r()*z2,t'=1&t<=T()}](w>0&c1>0&c2>0&onSide1(x1,x2,c1,c2,w,0.0,(-1.0)))") ; unfold ; expand "onSide1" ; expand "onSideGeneric" ; expand "afterwards1" ; expand "afterwards2" ; expand "sp" ; fullSimplify ; cut("t_<=T()") ; <(
+                "Use": cut("-((p()*y1+r()*z1)*t_+x1)-((p()-r())/w*(c2-((-w+p()*y2+r()*z2)*t_+x2))+c1)=(-(p()*y1+r()*z1)+(p()-r())/w*(-w+p()*y2+r()*z2))*t_-x1-(p()-r())/w*c2+(p()-r())/w*x2-c1") ; <(
+                    "Use": allL2R('L=="-((p()*y1+r()*z1)*t_+x1)-((p()-r())/w*(c2-((-w+p()*y2+r()*z2)*t_+x2))+c1)=(-(p()*y1+r()*z1)+(p()-r())/w*(-w+p()*y2+r()*z2))*t_-x1-(p()-r())/w*c2+(p()-r())/w*x2-c1") ; hideL('L=="-((p()*y1+r()*z1)*t_+x1)-((p()-r())/w*(c2-((-w+p()*y2+r()*z2)*t_+x2))+c1)=(-(p()*y1+r()*z1)+(p()-r())/w*(-w+p()*y2+r()*z2))*t_-x1-(p()-r())/w*c2+(p()-r())/w*x2-c1") ; cut("-(x1+T()*p()*y1+T()*r())-((p()-r())/w*(c2-(x2+T()*p()*y2-T()*w-T()*r()))+c1)=(-(p()*y1+r())+(p()-r())/w*(-w+p()*y2-r()))*T()-x1-(p()-r())/w*c2+(p()-r())/w*x2-c1") ; <(
+                        "Use": allL2R('L=="-(x1+T()*p()*y1+T()*r())-((p()-r())/w*(c2-(x2+T()*p()*y2-T()*w-T()*r()))+c1)=(-(p()*y1+r())+(p()-r())/w*(-w+p()*y2-r()))*T()-x1-(p()-r())/w*c2+(p()-r())/w*x2-c1") ; hideL('L=="-(x1+T()*p()*y1+T()*r())-((p()-r())/w*(c2-(x2+T()*p()*y2-T()*w-T()*r()))+c1)=(-(p()*y1+r())+(p()-r())/w*(-w+p()*y2-r()))*T()-x1-(p()-r())/w*c2+(p()-r())/w*x2-c1") ; hideL('L=="\forall s_ (0<=s_&s_<=t_->s_+t<=T())") ; cut("(-(p()*y1+r()*z1)+(p()-r())/w*(-w+p()*y2+r()*z2))*t_-x1-(p()-r())/w*c2+(p()-r())/w*x2-c1>=(-(p()*y1+r())+(p()-r())/w*(-w+p()*y2-r()))*T()-x1-(p()-r())/w*c2+(p()-r())/w*x2-c1") ; <(
+                            "Use": abbrv("(-(p()*y1+r()*z1)+(p()-r())/w*(-w+p()*y2+r()*z2))*t_-x1-(p()-r())/w*c2+(p()-r())/w*x2-c1", "g") ; abbrv("(-(p()*y1+r())+(p()-r())/w*(-w+p()*y2-r()))*T()-x1-(p()-r())/w*c2+(p()-r())/w*x2-c1", "h") ; hideL('L=="h=(-(p()*y1+r())+(p()-r())/w*(-w+p()*y2-r()))*T()-x1-(p()-r())/w*c2+(p()-r())/w*x2-c1") ; hideL('L=="g=(-(p()*y1+r()*z1)+(p()-r())/w*(-w+p()*y2+r()*z2))*t_-x1-(p()-r())/w*c2+(p()-r())/w*x2-c1") ; QE using "h>=0 :: g>=h :: g>=0 :: nil",
+                            "Show": hideR('R=="(-(p()*y1+r()*z1)+(p()-r())/w*(-w+p()*y2+r()*z2))*t_-x1-(p()-r())/w*c2+(p()-r())/w*x2-c1>=0") ; cut("-(p()*y1+r()*z1)+(p()-r())/w*(-w+p()*y2+r()*z2)>=-(p()*y1+r())+(p()-r())/w*(-w+p()*y2-r())") ; <(
+                                "Use": abbrv("-(p()*y1+r()*z1)+(p()-r())/w*(-w+p()*y2+r()*z2)", "g") ; edit("g < 0", 'L=="-(p()*y1+r()*z1)-(p()-r())/w*(-(-w+p()*y2+r()*z2)) < 0") ; hideL('L=="g=-(p()*y1+r()*z1)+(p()-r())/w*(-w+p()*y2+r()*z2)") ; abbrv("-(p()*y1+r())+(p()-r())/w*(-w+p()*y2-r())", "g") ; hideL('L=="g=-(p()*y1+r())+(p()-r())/w*(-w+p()*y2-r())") ; QE,
+                                "Show": QE using "p()>r() :: r()>0 :: z1^2+z2^2<=1 :: w>0 :: y1^2+y2^2<=1 :: -(p()*y1+r()*z1)+(p()-r())/w*(-w+p()*y2+r()*z2)>=-(p()*y1+r())+(p()-r())/w*(-w+p()*y2-r()) :: nil"
+                              )
+                          ),
+                        "Show": QE using "-(x1+T()*p()*y1+T()*r())-((p()-r())/w*(c2-(x2+T()*p()*y2-T()*w-T()*r()))+c1)=(-(p()*y1+r())+(p()-r())/w*(-w+p()*y2-r()))*T()-x1-(p()-r())/w*c2+(p()-r())/w*x2-c1"
+                      ),
+                    "Show": QE using "-((p()*y1+r()*z1)*t_+x1)-((p()-r())/w*(c2-((-w+p()*y2+r()*z2)*t_+x2))+c1)=(-(p()*y1+r()*z1)+(p()-r())/w*(-w+p()*y2+r()*z2))*t_-x1-(p()-r())/w*c2+(p()-r())/w*x2-c1"
+                  ),
+                "Show": QE using "T()>0 :: t=0 :: t_>=0 :: \forall s_ (0<=s_&s_<=t_->s_+t<=T()) :: t_<=T() :: nil"
+              )
+          ),
+        "Show [a]Q": auto
+      ),
+          "onSide2(x1,x2,c1,c2,w,0.0,(-1.0))&onSide2(afterwards1(x1,y1,w)-T()*r(),afterwards2(x2,y2,w)-T()*r(),c1,c2,w,0.0,(-1.0))":
+            MR("w>0&c1>0&c2>0&onSide2(x1,x2,c1,c2,w,0.0,(-1.0))", 'R=="[{x1'=p()*y1+r()*z1,x2'=-w+p()*y2+r()*z2,t'=1&t<=T()}](w>0&c1>0&c2>0&(slipstream(x1,x2,c1,c2,w,0.0,(-1.0))|farAway(x1,x2,c1,c2,w,0.0,(-1.0))|onSide1(x1,x2,c1,c2,w,0.0,(-1.0))|onSide2(x1,x2,c1,c2,w,0.0,(-1.0))))") ; <(
+        "Use Q->P": cut("p()*y1+r()*z1-(p()-r())/w*(-(-w+p()*y2+r()*z2))>=0") ; <(
+            "Use": dIRule('R=="[{x1'=p()*y1+r()*z1,x2'=-w+p()*y2+r()*z2,t'=1&t<=T()}](w>0&c1>0&c2>0&onSide2(x1,x2,c1,c2,w,0.0,(-1.0)))") ; <(
+                "dI Init": auto,
+                "dI Step": auto
+              ),
+            "Show": edit("!!p()*y1+r()*z1-(p()-r())/w*(-(-w+p()*y2+r()*z2))>=0", 'R=="p()*y1+r()*z1-(p()-r())/w*(-(-w+p()*y2+r()*z2))>=0") ; notR('R=="!!p()*y1+r()*z1-(p()-r())/w*(-(-w+p()*y2+r()*z2))>=0") ; notGreaterEqual('L=="!p()*y1+r()*z1-(p()-r())/w*(-(-w+p()*y2+r()*z2))>=0") ; solve('R=="[{x1'=p()*y1+r()*z1,x2'=-w+p()*y2+r()*z2,t'=1&t<=T()}](w>0&c1>0&c2>0&onSide2(x1,x2,c1,c2,w,0.0,(-1.0)))") ; unfold ; expand "onSide2" ; expand "onSideGeneric" ; expand "sp" ; expand "afterwards1" ; expand "afterwards2" ; fullSimplify ; cut("--((p()*y1+r()*z1)*t_+x1)-((p()-r())/w*(c2-((-w+p()*y2+r()*z2)*t_+x2))+c1)=(p()*y1+r()*z1+(p()-r())/w*(-w+p()*y2+r()*z2))*t_+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2") ; <(
+                "Use": allL2R('L=="--((p()*y1+r()*z1)*t_+x1)-((p()-r())/w*(c2-((-w+p()*y2+r()*z2)*t_+x2))+c1)=(p()*y1+r()*z1+(p()-r())/w*(-w+p()*y2+r()*z2))*t_+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2") ; hideL('L=="--((p()*y1+r()*z1)*t_+x1)-((p()-r())/w*(c2-((-w+p()*y2+r()*z2)*t_+x2))+c1)=(p()*y1+r()*z1+(p()-r())/w*(-w+p()*y2+r()*z2))*t_+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2") ; cut("--(x1+T()*p()*y1-T()*r())-((p()-r())/w*(c2-(x2+T()*p()*y2-T()*w-T()*r()))+c1)=(p()*y1-r()+(p()-r())/w*(-w+p()*y2-r()))*T()+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2") ; <(
+                    "Use": allL2R('L=="--(x1+T()*p()*y1-T()*r())-((p()-r())/w*(c2-(x2+T()*p()*y2-T()*w-T()*r()))+c1)=(p()*y1-r()+(p()-r())/w*(-w+p()*y2-r()))*T()+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2") ; hideL('L=="--(x1+T()*p()*y1-T()*r())-((p()-r())/w*(c2-(x2+T()*p()*y2-T()*w-T()*r()))+c1)=(p()*y1-r()+(p()-r())/w*(-w+p()*y2-r()))*T()+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2") ; cut("t_<=T()") ; <(
+                        "Use": cut("(p()*y1+r()*z1+(p()-r())/w*(-w+p()*y2+r()*z2))*t_+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2>=(p()*y1-r()+(p()-r())/w*(-w+p()*y2-r()))*T()+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2") ; <(
+                            "Use": abbrv("(p()*y1+r()*z1+(p()-r())/w*(-w+p()*y2+r()*z2))*t_+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2", "g") ; hideL('L=="g=(p()*y1+r()*z1+(p()-r())/w*(-w+p()*y2+r()*z2))*t_+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2") ; abbrv("(p()*y1-r()+(p()-r())/w*(-w+p()*y2-r()))*T()+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2", "h") ; hideL('L=="h=(p()*y1-r()+(p()-r())/w*(-w+p()*y2-r()))*T()+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2") ; QE using "h>=0 :: g>=h :: g>=0 :: nil",
+                            "Show": hideL('L=="(p()*y1-r()+(p()-r())/w*(-w+p()*y2-r()))*T()+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2>=0") ; hideL('L=="\forall s_ (0<=s_&s_<=t_->s_+t<=T())") ; hideR('R=="(p()*y1+r()*z1+(p()-r())/w*(-w+p()*y2+r()*z2))*t_+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2>=0") ; hideL('L=="--x1-((p()-r())/w*(c2-x2)+c1)>=0") ; cut("p()*y1+r()*z1+(p()-r())/w*(-w+p()*y2+r()*z2)>=p()*y1-r()+(p()-r())/w*(-w+p()*y2-r())") ; <(
+                                "Use": abbrv("p()*y1+r()*z1+(p()-r())/w*(-w+p()*y2+r()*z2)", "g") ; abbrv("p()*y1-r()+(p()-r())/w*(-w+p()*y2-r())", "h") ; edit("g < 0", 'L=="p()*y1+r()*z1-(p()-r())/w*(-(-w+p()*y2+r()*z2)) < 0") ; hideL('L=="h=p()*y1-r()+(p()-r())/w*(-w+p()*y2-r())") ; hideL('L=="g=p()*y1+r()*z1+(p()-r())/w*(-w+p()*y2+r()*z2)") ; QE,
+                                "Show": hideR('R=="(p()*y1+r()*z1+(p()-r())/w*(-w+p()*y2+r()*z2))*t_+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2>=(p()*y1-r()+(p()-r())/w*(-w+p()*y2-r()))*T()+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2") ; hideL('L=="p()*y1+r()*z1-(p()-r())/w*(-(-w+p()*y2+r()*z2)) < 0") ; QE
+                              )
+                          ),
+                        "Show": QE using "T()>0 :: t=0 :: t_>=0 :: \forall s_ (0<=s_&s_<=t_->s_+t<=T()) :: t_<=T() :: nil"
+                      ),
+                    "Show": QE using "--(x1+T()*p()*y1-T()*r())-((p()-r())/w*(c2-(x2+T()*p()*y2-T()*w-T()*r()))+c1)=(p()*y1-r()+(p()-r())/w*(-w+p()*y2-r()))*T()+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2"
+                  ),
+                "Show": QE using "--((p()*y1+r()*z1)*t_+x1)-((p()-r())/w*(c2-((-w+p()*y2+r()*z2)*t_+x2))+c1)=(p()*y1+r()*z1+(p()-r())/w*(-w+p()*y2+r()*z2))*t_+x1-c1-(p()-r())/w*c2+(p()-r())/w*x2"
+              )
+          ),
+        "Show [a]Q": auto
+      )
+        )
+    )
+)
+End.
+End.
+Theorem "ZeppelinBox/Safety"
 ProgramVariables
     /* IN */
     /* Zeppelin Position */
@@ -219,86 +443,46 @@ Problem
         -> [{
       ctrl;
       model;
-	  {
-		?(true);
-		++
-		{
-			setEnv;
-			performBaseChange;
-		}
-	  }
+      {
+    ?(true);
+    ++
+    {
+      setEnv;
+      performBaseChange;
+    }
+    }
     }*@invariant(outsideDangerWindSystem(x1,x2,c1,c2,w))] outsideObstacle(x1,x2,c1,c2)
 End.
-End.
-Lemma "ZeppelinV3/controllerPreservation"
-ProgramVariables
-    /* IN */
-    /* Zeppelin Position */
-    Real x1;
-    Real x2;
-    /* Obstacle size */
-    Real c1;
-    Real c2;
-    /* Wind velocity */
-    Real w;
-    
-    /* OUT */
-    /* Zeppelin Velocity */
-    Real y1;
-    Real y2;
-    
-    /* Intermediate */
-    /* Turbulence direction & strength */
-    Real z1;
-    Real z2;
-    
-    /* Clock */
-    Real t;
-End.
-Problem
-(p > r & r > 0 & T > 0 & outsideDangerWindSystem(x1,x2,c1,c2,w))
-->
-[ctrl;][model;]outsideDangerWindSystem(x1,x2,c1,c2,w)
-End.
-End.
-Lemma "ZeppelinV3/baseChangePreservation"
-ProgramVariables
-    /* IN */
-    /* Zeppelin Position */
-    Real x1;
-    Real x2;
-    /* Obstacle size */
-    Real c1;
-    Real c2;
-    /* Wind velocity */
-    Real w;
-    
-    /* OUT */
-    /* Zeppelin Velocity */
-    Real y1;
-    Real y2;
-    
-    /* Intermediate */
-    Real x1cp;
-    Real x2cp;
-    /* New obstacle position */
-    Real o1;
-    Real o2;
-    /* New wind direction & strength */
-    Real v1;
-    Real v2;
-    /* Turbulence direction & strength */
-    Real z1;
-    Real z2;
-    
-    /* Clock */
-    Real t;
-    
-    
-End.
-Problem
-outsideDangerWindSystem(x1,x2,c1,c2,w)
-->
-[setEnv;][performBaseChange;] outsideDangerWindSystem(x1,x2,c1,c2,w)
+Tactic "Overall Safety Proof"
+unfold;
+loop("outsideDangerWindSystem(x1,x2,c1,c2,w)", 'R=="[{ctrl{|^@|};model{|^@|};{?true;++setEnv{|^@|};performBaseChange{|^@|};}}*]outsideObstacle(x1,x2,c1,c2)"); <(
+  "Init":
+    QE,
+  "Post":
+    auto,
+  "Step":
+    composeb('R=="[ctrl{|^@|};model{|^@|};{?true;++setEnv{|^@|};performBaseChange{|^@|};}](w>0&c1>0&c2>0&(x1*(-(0.0))+x2*(-((-1.0)))<=-c2|x1*(-(0.0))+x2*(-((-1.0)))>c2+w/(p()-r())*c1|1.0*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0|(-1.0)*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0))") ; composeb('R=="[ctrl{|^@|};]#[model{|^@|};{?true;++setEnv{|^@|};performBaseChange{|^@|};}](w>0&c1>0&c2>0&(x1*(-(0.0))+x2*(-((-1.0)))<=-c2|x1*(-(0.0))+x2*(-((-1.0)))>c2+w/(p()-r())*c1|1.0*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0|(-1.0)*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0))#") ; MR("outsideDangerWindSystem(x1,x2,c1,c2,w)", 'R=="[ctrl{|^@|};]#[model{|^@|};][?true;++setEnv{|^@|};performBaseChange{|^@|};](w>0&c1>0&c2>0&(x1*(-(0.0))+x2*(-((-1.0)))<=-c2|x1*(-(0.0))+x2*(-((-1.0)))>c2+w/(p()-r())*c1|1.0*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0|(-1.0)*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0))#"); <(
+      "Use Q->P":
+        useLemma("ZeppelinBox/controllerPreservation", "nil");
+        implyL('L=="p()>r()&r()>0&T()>0&w>0&c1>0&c2>0&(x1*(-(0.0))+x2*(-((-1.0)))<=-c2|x1*(-(0.0))+x2*(-((-1.0)))>c2+w/(p()-r())*c1|1.0*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0|(-1.0)*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0)->[y1:=*;y2:=*;?y1^2+y2^2<=1&(x1*(-(0.0))+x2*(-((-1.0)))<=-c2&(x1+T()*p()*y1)*(-(0.0))+(x2+T()*p()*y2-T()*w+T()*r())*(-((-1.0)))<=-c2|x1*(-(0.0))+x2*(-((-1.0)))>c2+w/(p()-r())*c1&(x1+T()*p()*y1)*(-(0.0))+(x2+T()*p()*y2-T()*w-T()*r())*(-((-1.0)))>c2+w/(p()-r())*c1|1.0*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0&1.0*((x1+T()*p()*y1+T()*r())*(-1.0)+(x2+T()*p()*y2-T()*w-T()*r())*(-(0.0)))-((p()-r())/w*(c2-((x1+T()*p()*y1+T()*r())*(-(0.0))+(x2+T()*p()*y2-T()*w-T()*r())*(-((-1.0)))))+c1)>=0|(-1.0)*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0&(-1.0)*((x1+T()*p()*y1-T()*r())*(-1.0)+(x2+T()*p()*y2-T()*w-T()*r())*(-(0.0)))-((p()-r())/w*(c2-((x1+T()*p()*y1-T()*r())*(-(0.0))+(x2+T()*p()*y2-T()*w-T()*r())*(-((-1.0)))))+c1)>=0);][{{z1:=*;z2:=*;?z1^2+z2^2<=1;}t:=0;}{x1'=p()*y1+r()*z1,x2'=-w+p()*y2+r()*z2,t'=1&t<=T()}](w>0&c1>0&c2>0&(x1*(-(0.0))+x2*(-((-1.0)))<=-c2|x1*(-(0.0))+x2*(-((-1.0)))>c2+w/(p()-r())*c1|1.0*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0|(-1.0)*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0))"); <(
+          "p()>r()&r()>0&T()>0&w>0&c1>0&c2>0&(x1*(-(0.0))+x2*(-((-1.0)))<=-c2|x1*(-(0.0))+x2*(-((-1.0)))>c2+w/(p()-r())*c1|1.0*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0|(-1.0)*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0)":
+            hideR('R=="[ctrl{|^@|};][model{|^@|};](w>0&c1>0&c2>0&(x1*(-(0.0))+x2*(-((-1.0)))<=-c2|x1*(-(0.0))+x2*(-((-1.0)))>c2+w/(p()-r())*c1|1.0*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0|(-1.0)*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0))");
+            auto,
+          "[y1:=*;y2:=*;?y1^2+y2^2<=1&(x1*(-(0.0))+x2*(-((-1.0)))<=-c2&(x1+T()*p()*y1)*(-(0.0))+(x2+T()*p()*y2-T()*w+T()*r())*(-((-1.0)))<=-c2|x1*(-(0.0))+x2*(-((-1.0)))>c2+w/(p()-r())*c1&(x1+T()*p()*y1)*(-(0.0))+(x2+T()*p()*y2-T()*w-T()*r())*(-((-1.0)))>c2+w/(p()-r())*c1|1.0*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0&1.0*((x1+T()*p()*y1+T()*r())*(-1.0)+(x2+T()*p()*y2-T()*w-T()*r())*(-(0.0)))-((p()-r())/w*(c2-((x1+T()*p()*y1+T()*r())*(-(0.0))+(x2+T()*p()*y2-T()*w-T()*r())*(-((-1.0)))))+c1)>=0|(-1.0)*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0&(-1.0)*((x1+T()*p()*y1-T()*r())*(-1.0)+(x2+T()*p()*y2-T()*w-T()*r())*(-(0.0)))-((p()-r())/w*(c2-((x1+T()*p()*y1-T()*r())*(-(0.0))+(x2+T()*p()*y2-T()*w-T()*r())*(-((-1.0)))))+c1)>=0);][{{z1:=*;z2:=*;?z1^2+z2^2<=1;}t:=0;}{x1'=p()*y1+r()*z1,x2'=-w+p()*y2+r()*z2,t'=1&t<=T()}](w>0&c1>0&c2>0&(x1*(-(0.0))+x2*(-((-1.0)))<=-c2|x1*(-(0.0))+x2*(-((-1.0)))>c2+w/(p()-r())*c1|1.0*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0|(-1.0)*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0))":
+            expandAllDefs;
+            hideL('L=="w>0&c1>0&c2>0&(x1*(-(0.0))+x2*(-((-1.0)))<=-c2|x1*(-(0.0))+x2*(-((-1.0)))>c2+w/(p()-r())*c1|1.0*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0|(-1.0)*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0)");
+            auto
+        ),
+      "Show [a]Q":
+        choiceb('R=="[?true;++setEnv{|^@|};performBaseChange{|^@|};](w>0&c1>0&c2>0&(x1*(-(0.0))+x2*(-((-1.0)))<=-c2|x1*(-(0.0))+x2*(-((-1.0)))>c2+w/(p()-r())*c1|1.0*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0|(-1.0)*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0))");
+        andR('R=="[?true;](w>0&c1>0&c2>0&(x1*(-(0.0))+x2*(-((-1.0)))<=-c2|x1*(-(0.0))+x2*(-((-1.0)))>c2+w/(p()-r())*c1|1.0*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0|(-1.0)*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0))&[setEnv{|^@|};performBaseChange{|^@|};](w>0&c1>0&c2>0&(x1*(-(0.0))+x2*(-((-1.0)))<=-c2|x1*(-(0.0))+x2*(-((-1.0)))>c2+w/(p()-r())*c1|1.0*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0|(-1.0)*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0))"); <(
+          "[?true;](w>0&c1>0&c2>0&(x1*(-(0.0))+x2*(-((-1.0)))<=-c2|x1*(-(0.0))+x2*(-((-1.0)))>c2+w/(p()-r())*c1|1.0*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0|(-1.0)*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0))":
+            auto,
+          "[setEnv{|^@|};performBaseChange{|^@|};](w>0&c1>0&c2>0&(x1*(-(0.0))+x2*(-((-1.0)))<=-c2|x1*(-(0.0))+x2*(-((-1.0)))>c2+w/(p()-r())*c1|1.0*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0|(-1.0)*(x1*(-1.0)+x2*(-(0.0)))-((p()-r())/w*(c2-(x1*(-(0.0))+x2*(-((-1.0)))))+c1)>=0))":
+            useLemma("ZeppelinBox/baseChangePreservation", "nil");
+            auto
+        )
+    )
+)
 End.
 End.

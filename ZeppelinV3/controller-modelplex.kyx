@@ -1,0 +1,21 @@
+y1post^2 + y2post^2 <= 1 &
+(
+  x2 <= -c2 & x2 + T() * p() * y2post - T() * w + T() * r() <= -c2 |
+  x2 > c2 + w / (p() - r()) * c1 &
+  x2 + T() * p() * y2post - T() * w - T() * r() > c2 + w / (p() - r()) * c1 |
+  -x1 - ((p() - r()) / w * (c2 - x2) + c1) >= 0 &
+  -(x1 + T() * p() * y1post + T() * r()) -
+  (
+    (p() - r()) / w * (c2 - (x2 + T() * p() * y2post - T() * w - T() * r())) +
+    c1
+  ) >=
+  0 |
+  x1 - ((p() - r()) / w * (c2 - x2) + c1) >= 0 &
+  x1 + T() * p() * y1post - T() * r() -
+  (
+    (p() - r()) / w * (c2 - (x2 + T() * p() * y2post - T() * w - T() * r())) +
+    c1
+  ) >=
+  0
+) &
+tpost = t & x1post = x1 & x2post = x2 & z1post = z1 & z2post = z2 & tpost <= T
