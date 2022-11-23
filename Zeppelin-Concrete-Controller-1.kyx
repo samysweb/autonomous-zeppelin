@@ -1,0 +1,411 @@
+﻿/* Exported from KeYmaera X v5.0 */
+
+Theorem "End-to-End/Zeppelin-Concrete-Controller"
+
+/* Input content */
+Definitions
+  Real p;
+  Real r;
+  Real T;
+  Real q(Real c, Real v) = -(c/(p-r))*v;
+  Real w1(Real v1, Real v2) = v1/(v1^2+v2^2)^(1/2);
+  Real w2(Real v1, Real v2) = v2/(v1^2+v2^2)^(1/2);
+  Bool safety(Real o1, Real o2, Real c, Real x1, Real x2) <-> ( ((x1-o1)^2 + (x2-o2)^2) > c^2 );
+  Real behindPush1(Real c, Real v1, Real v2) = T*r*w1(-v1,-v2);
+  Real behindPush2(Real c, Real v1, Real v2) = T*r*w2(-v1,-v2);
+  Real behindFocalPointEq(Real c, Real x1, Real x2, Real v1, Real v2) = x1*w1(-v1,-v2)+x2*w2(-v1,-v2)-((c/(p-r))*(v1^2+v2^2)^(1/2)+T*r);
+  Bool behindFocalPoint(Real c, Real x1, Real x2, Real v1, Real v2)
+        <-> behindFocalPointEq(c,x1,x2,v1,v2)>0;
+  Real onSide1Eq(Real c, Real x1, Real x2, Real v1, Real v2) = c*(q(c,v1)*(x1-q(c,v1))+q(c,v2)*(x2-q(c,v2))) + (q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*(q(c,v1)*x2-q(c,v2)*x1);
+  Bool onSide1(Real c, Real x1, Real x2, Real v1, Real v2)
+        <-> onSide1Eq(c,x1,x2,v1,v2) > 0.0;
+  Real onSide2Eq(Real c, Real x1, Real x2, Real v1, Real v2) = c*(q(c,v1)*(x1-q(c,v1))+q(c,v2)*(x2-q(c,v2))) - (q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*(q(c,v1)*x2-q(c,v2)*x1);
+  Bool onSide2(Real c, Real x1, Real x2, Real v1, Real v2)
+        <-> onSide2Eq(c,x1,x2,v1,v2) > 0.0;
+  Real inFrontOfBallEq(Real c, Real x1, Real x2, Real v1, Real v2) = x1*w1(v1,v2)+x2*w2(v1,v2)-c;
+  Bool inFrontOfBall(Real c, Real x1, Real x2, Real v1, Real v2)
+        <-> inFrontOfBallEq(c,x1,x2,v1,v2)>0;
+  Real frontPush1(Real c, Real v1, Real v2) = T*r*w1(v1,v2);
+  Real frontPush2(Real c, Real v1, Real v2) = T*r*w2(v1,v2);
+  Bool obstacleConditionOrigin(Real v1, Real v2, Real c, Real x1, Real x2)
+        <-> (
+                p < r+(v1^2+v2^2)^(1/2) & c > 0 & (
+                onSide1(c,x1,x2,v1,v2) |
+                onSide2(c,x1,x2,v1,v2) |
+                inFrontOfBall(c,x1,x2,v1,v2)|
+                behindFocalPoint(c,x1,x2,v1,v2)
+                )
+            );
+  Bool obstacleCondition(Real v1, Real v2, Real o1, Real o2, Real c, Real x1, Real x2)
+        <-> obstacleConditionOrigin(v1,v2,c,(x1-o1),(x2-o2));
+  Real afterwards(Real x, Real v, Real y) = x+T*(v+p*y);
+  Real push1(Real c,Real v1,Real v2)=T*r*((c*q(c,v1)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,-v2))/(q(c,v1)^2+q(c,v2)^2));
+  Real push2(Real c,Real v1,Real v2)=T*r*((c*q(c,v2)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,v1))/(q(c,v1)^2+q(c,v2)^2));
+  Real side2Push1(Real c,Real v1,Real v2)=T*r*((c*q(c,v1)-(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,-v2))/(q(c,v1)^2+q(c,v2)^2));
+  Real side2Push2(Real c,Real v1,Real v2)=T*r*((c*q(c,v2)-(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,v1))/(q(c,v1)^2+q(c,v2)^2));
+  
+  Real side1ctrl1(Real c,Real v1,Real v2)=((c*q(c,v1)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,-v2))/(q(c,v1)^2+q(c,v2)^2));
+  Real side1ctrl2(Real c,Real v1,Real v2)=((c*q(c,v2)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,v1))/(q(c,v1)^2+q(c,v2)^2));
+  Real side2ctrl1(Real c,Real v1,Real v2)=((c*q(c,v1)-(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,-v2))/(q(c,v1)^2+q(c,v2)^2));
+  Real side2ctrl2(Real c,Real v1,Real v2)=((c*q(c,v2)-(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,v1))/(q(c,v1)^2+q(c,v2)^2));
+  Real downstreamctrl1(Real v1, Real v2) = w1(v1,v2);
+  Real downstreamctrl2(Real v1, Real v2) = w2(v1,v2);
+  Bool isInDir1(Real c, Real x1, Real x2, Real v1, Real v2) <-> (-v1*x2+v2*x1)>0;
+  
+  Bool controllerConditionOrigin(Real v1, Real v2, Real c, Real x1, Real x2, Real y1, Real y2)
+        <->(
+                y1^2+y2^2<=1 &
+                (
+                    onSide1(c,x1,x2,v1,v2) & onSide1(c,afterwards(x1,v1,y1)-push1(c,v1,v2),afterwards(x2,v2,y2)-push2(c,v1,v2),v1,v2) |
+                    onSide2(c,x1,x2,v1,v2) & onSide2(c,afterwards(x1,v1,y1)-side2Push1(c,v1,v2),afterwards(x2,v2,y2)-side2Push2(c,v1,v2),v1,v2) |
+                    inFrontOfBall(c,x1,x2,v1,v2) & inFrontOfBall(c,afterwards(x1,v1,y1)-frontPush1(c,v1,v2),afterwards(x2,v2,y2)-frontPush2(c,v1,v2),v1,v2) |
+                    behindFocalPoint(c,x1,x2,v1,v2) & behindFocalPoint(c,afterwards(x1,v1,y1)-behindPush1(c,v1,v2),afterwards(x2,v2,y2)-behindPush2(c,v1,v2),v1,v2)
+                )
+                    
+            );
+  Bool controllerCondition(Real v1, Real v2, Real o1, Real o2, Real c, Real x1, Real x2, Real y1, Real y2)
+        <-> controllerConditionOrigin(v1,v2,c,x1-o1,x2-o2,y1,y2);
+
+  HP ctrl ::= {
+      if (inFrontOfBall(c,x1-o1,x2-o2,v1,v2)) {
+        y1 := downstreamctrl1(v1,v2);
+        y2 := downstreamctrl2(v1,v2);
+      } else {
+        if (isInDir1(c,x1-o1,x2-o2,v1,v2)) {
+            y1 := side1ctrl1(c,v1,v2);
+            y2 := side1ctrl2(c,v1,v2);
+        } else {
+            y1 := side2ctrl1(c,v1,v2);
+            y2 := side2ctrl2(c,v1,v2);
+        }
+      };
+    };
+End.
+ProgramVariables
+    /* Zeppelin */
+    /* Position of Zeppelin */
+    Real x1;
+    Real x2;
+    /* Velocity Direction of Zeppelin Propeller */
+    Real y1;
+    Real y2;
+    
+    /* Obstacle */
+    /* Position of obstacle */
+    Real o1;
+    Real o2;
+    /* Distance Radius to obstacle */
+    Real c;
+    
+    /* Winds */
+    /* Wind strength and direction */
+    Real v1;
+    Real v2;
+    /* Turbulence direction */
+    Real z1;
+    Real z2;
+    
+    /* Clock */
+    Real t;
+End.
+
+Problem
+  /* Propeller stronger than turbulence */
+  ((p > r & r>0 & T>0 & obstacleCondition(v1,v2,o1,o2,c,x1,x2)) -> [{
+      ctrl;
+    }] controllerCondition(v1, v2, o1, o2, c, x1, x2, y1, y2)
+    )
+End.
+
+Tactic "End-to-End/Zeppelin-Concrete-Controller: Proof"
+unfold;
+expand("ctrl");
+unfold; <(
+  "[?inFrontOfBall(c,x1-o1,x2-o2,v1,v2);y1:=downstreamctrl1(v1,v2);y2:=downstreamctrl2(v1,v2);]controllerCondition(v1,v2,o1,o2,c,x1,x2,y1,y2)":
+    expand("controllerCondition");
+    expand("controllerConditionOrigin");
+    andR('R=="downstreamctrl1(v1,v2)^2+downstreamctrl2(v1,v2)^2<=1&(onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-push1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-push2(c,v1,v2),v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)&onSide2(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-side2Push1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)&inFrontOfBall(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-frontPush1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)&behindFocalPoint(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-behindPush1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-behindPush2(c,v1,v2),v1,v2))"); <(
+      "downstreamctrl1(v1,v2)^2+downstreamctrl2(v1,v2)^2<=1":
+        auto,
+      "onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-push1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-push2(c,v1,v2),v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)&onSide2(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-side2Push1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)&inFrontOfBall(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-frontPush1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)&behindFocalPoint(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-behindPush1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-behindPush2(c,v1,v2),v1,v2)":
+        orR('R=="onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-push1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-push2(c,v1,v2),v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)&onSide2(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-side2Push1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)&inFrontOfBall(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-frontPush1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)&behindFocalPoint(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-behindPush1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-behindPush2(c,v1,v2),v1,v2)");
+        orR('R=="onSide2(c,x1-o1,x2-o2,v1,v2)&onSide2(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-side2Push1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)&inFrontOfBall(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-frontPush1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)&behindFocalPoint(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-behindPush1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-behindPush2(c,v1,v2),v1,v2)");
+        orR('R=="inFrontOfBall(c,x1-o1,x2-o2,v1,v2)&inFrontOfBall(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-frontPush1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)&behindFocalPoint(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-behindPush1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-behindPush2(c,v1,v2),v1,v2)");
+        hideR('R=="onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-push1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-push2(c,v1,v2),v1,v2)");
+        hideR('R=="onSide2(c,x1-o1,x2-o2,v1,v2)&onSide2(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-side2Push1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-side2Push2(c,v1,v2),v1,v2)");
+        hideR('R=="behindFocalPoint(c,x1-o1,x2-o2,v1,v2)&behindFocalPoint(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-behindPush1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-behindPush2(c,v1,v2),v1,v2)");
+        expand("obstacleCondition");
+        expand("obstacleConditionOrigin");
+        andL('L=="p() < r()+(v1^2+v2^2)^(1/2)&c>0&(onSide1(c,x1-o1,x2-o2,v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2))");
+        andL('L=="c>0&(onSide1(c,x1-o1,x2-o2,v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2))");
+        hideL('L=="onSide1(c,x1-o1,x2-o2,v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)");
+        andR('R=="inFrontOfBall(c,x1-o1,x2-o2,v1,v2)&inFrontOfBall(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-frontPush1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-frontPush2(c,v1,v2),v1,v2)"); <(
+          "inFrontOfBall(c,x1-o1,x2-o2,v1,v2)":
+            auto,
+          "inFrontOfBall(c,afterwards(x1-o1,v1,downstreamctrl1(v1,v2))-frontPush1(c,v1,v2),afterwards(x2-o2,v2,downstreamctrl2(v1,v2))-frontPush2(c,v1,v2),v1,v2)":
+            abbrv("x1-o1", "a1");
+            abbrv("x2-o2", "a2");
+            auto
+        )
+    ),
+  "[?isInDir1(c,x1-o1,x2-o2,v1,v2);y1:=side1ctrl1(c,v1,v2);y2:=side1ctrl2(c,v1,v2);]controllerCondition(v1,v2,o1,o2,c,x1,x2,y1,y2)":
+    edit("!!inFrontOfBall(c,x1-o1,x2-o2,v1,v2)", 'R=="inFrontOfBall(c,x1-o1,x2-o2,v1,v2)");
+    notR('R=="!!inFrontOfBall(c,x1-o1,x2-o2,v1,v2)");
+    expand("obstacleCondition");
+    expand("obstacleConditionOrigin");
+    andL('L=="p() < r()+(v1^2+v2^2)^(1/2)&c>0&(onSide1(c,x1-o1,x2-o2,v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2))");
+    andL('L=="c>0&(onSide1(c,x1-o1,x2-o2,v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2))");
+    expand("controllerCondition");
+    expand("controllerConditionOrigin");
+    andR('R=="side1ctrl1(c,v1,v2)^2+side1ctrl2(c,v1,v2)^2<=1&(onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-push1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)&onSide2(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-side2Push1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)&inFrontOfBall(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-frontPush1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)&behindFocalPoint(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-behindPush1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-behindPush2(c,v1,v2),v1,v2))"); <(
+      "side1ctrl1(c,v1,v2)^2+side1ctrl2(c,v1,v2)^2<=1":
+        auto,
+      "onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-push1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)&onSide2(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-side2Push1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)&inFrontOfBall(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-frontPush1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)&behindFocalPoint(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-behindPush1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-behindPush2(c,v1,v2),v1,v2)":
+        orR('R=="onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-push1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)&onSide2(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-side2Push1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)&inFrontOfBall(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-frontPush1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)&behindFocalPoint(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-behindPush1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-behindPush2(c,v1,v2),v1,v2)");
+        hideR('R=="onSide2(c,x1-o1,x2-o2,v1,v2)&onSide2(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-side2Push1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)&inFrontOfBall(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-frontPush1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)&behindFocalPoint(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-behindPush1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-behindPush2(c,v1,v2),v1,v2)");
+        orL('L=="onSide1(c,x1-o1,x2-o2,v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)"); <(
+          "onSide1(c,x1-o1,x2-o2,v1,v2)":
+            andR('R=="onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-push1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)"); <(
+              "onSide1(c,x1-o1,x2-o2,v1,v2)":
+                auto,
+              "onSide1(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-push1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)":
+                abbrv("x1-o1", "a1");
+                abbrv("x2-o2", "a2");
+                hideL('L=="a2=x2-o2");
+                hideL('L=="a1=x1-o1");
+                expand("afterwards");
+                expand("push1") ; expand("push2");
+                cut("a1+T()*(v1+p()*side1ctrl1(c,v1,v2))-T()*r()*((c*q(c,v1)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,-v2))/(q(c,v1)^2+q(c,v2)^2))=a1+T()*(v1+(p()-r())*side1ctrl1(c,v1,v2))"); <(
+                  "Use":
+                    cut("a2+T()*(v2+p()*side1ctrl2(c,v1,v2))-T()*r()*((c*q(c,v2)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,v1))/(q(c,v1)^2+q(c,v2)^2))=a2+T()*(v2+(p()-r())*side1ctrl2(c,v1,v2))"); <(
+                      "Use":
+                        expand("q");
+                        expand("side1ctrl1");
+                        expand("q");
+                        allL2R('L=="a1+T()*(v1+p()*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                        hideL('L=="a1+T()*(v1+p()*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                        expand("side1ctrl2");
+                        expand("q");
+                        allL2R('L=="a2+T()*(v2+p()*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a2+T()*(v2+(p()-r())*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                        hideL('L=="a2+T()*(v2+p()*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a2+T()*(v2+(p()-r())*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                        hideL('L=="!inFrontOfBall(c,a1,a2,v1,v2)");
+                        auto,
+                      "Show":
+                        hideR('R=="onSide1(c,a1+T()*(v1+p()*side1ctrl1(c,v1,v2))-T()*r()*((c*q(c,v1)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,-v2))/(q(c,v1)^2+q(c,v2)^2)),a2+T()*(v2+p()*side1ctrl2(c,v1,v2))-T()*r()*((c*q(c,v2)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,v1))/(q(c,v1)^2+q(c,v2)^2)),v1,v2)");
+                        hideL('L=="a1+T()*(v1+p()*side1ctrl1(c,v1,v2))-T()*r()*((c*q(c,v1)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,-v2))/(q(c,v1)^2+q(c,v2)^2))=a1+T()*(v1+(p()-r())*side1ctrl1(c,v1,v2))");
+                        QE using "a2+T()*(v2+p()*side1ctrl2(c,v1,v2))-T()*r()*((c*q(c,v2)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,v1))/(q(c,v1)^2+q(c,v2)^2))=a2+T()*(v2+(p()-r())*side1ctrl2(c,v1,v2))"
+                    ),
+                  "Show":
+                    hideR('R=="onSide1(c,a1+T()*(v1+p()*side1ctrl1(c,v1,v2))-T()*r()*((c*q(c,v1)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,-v2))/(q(c,v1)^2+q(c,v2)^2)),a2+T()*(v2+p()*side1ctrl2(c,v1,v2))-T()*r()*((c*q(c,v2)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,v1))/(q(c,v1)^2+q(c,v2)^2)),v1,v2)");
+                    QE using "a1+T()*(v1+p()*side1ctrl1(c,v1,v2))-T()*r()*((c*q(c,v1)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,-v2))/(q(c,v1)^2+q(c,v2)^2))=a1+T()*(v1+(p()-r())*side1ctrl1(c,v1,v2))"
+                )
+            ),
+          "onSide2(c,x1-o1,x2-o2,v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)":
+            orL('L=="onSide2(c,x1-o1,x2-o2,v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)"); <(
+              "onSide2(c,x1-o1,x2-o2,v1,v2)":
+                andR('R=="onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-push1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)"); <(
+                  "onSide1(c,x1-o1,x2-o2,v1,v2)":
+                    abbrv("x1-o1", "a1");
+                    abbrv("x2-o2", "a2");
+                    hideL('L=="a2=x2-o2");
+                    hideL('L=="a1=x1-o1");
+                    hideL('L=="!inFrontOfBall(c,a1,a2,v1,v2)");
+                    expandAllDefs();
+                    fullSimplify;
+                    QE,
+                  "onSide1(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-push1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)":
+                    abbrv("x1-o1", "a1") ; abbrv("x2-o2", "a2") ; expand("afterwards") ; expand("push1") ; expand("push2");
+                    cut("a1+T()*(v1+p()*side1ctrl1(c,v1,v2))-T()*r()*((c*q(c,v1)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,-v2))/(q(c,v1)^2+q(c,v2)^2))=a1+T()*(v1+(p()-r())*side1ctrl1(c,v1,v2))"); <(
+                      "Use":
+                        cut("a2+T()*(v2+p()*side1ctrl2(c,v1,v2))-T()*r()*((c*q(c,v2)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,v1))/(q(c,v1)^2+q(c,v2)^2))=a2+T()*(v2+(p()-r())*side1ctrl2(c,v1,v2))"); <(
+                          "Use":
+                            expand("q");
+                            expand("side1ctrl2");
+                            expand("q");
+                            allL2R('L=="a2+T()*(v2+p()*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a2+T()*(v2+(p()-r())*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                            hideL('L=="a2+T()*(v2+p()*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a2+T()*(v2+(p()-r())*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                            expand("side1ctrl1");
+                            expand("q");
+                            allL2R('L=="a1+T()*(v1+p()*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                            hideL('L=="a1+T()*(v1+p()*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                            hideL('L=="a2=x2-o2");
+                            hideL('L=="a1=x1-o1");
+                            hideL('L=="!inFrontOfBall(c,a1,a2,v1,v2)");
+                            QE,
+                          "Show":
+                            QE using "a2+T()*(v2+p()*side1ctrl2(c,v1,v2))-T()*r()*((c*q(c,v2)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,v1))/(q(c,v1)^2+q(c,v2)^2))=a2+T()*(v2+(p()-r())*side1ctrl2(c,v1,v2))"
+                        ),
+                      "Show":
+                        QE using "a1+T()*(v1+p()*side1ctrl1(c,v1,v2))-T()*r()*((c*q(c,v1)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,-v2))/(q(c,v1)^2+q(c,v2)^2))=a1+T()*(v1+(p()-r())*side1ctrl1(c,v1,v2))"
+                    )
+                ),
+              "inFrontOfBall(c,x1-o1,x2-o2,v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)":
+                orL('L=="inFrontOfBall(c,x1-o1,x2-o2,v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)"); <(
+                  "inFrontOfBall(c,x1-o1,x2-o2,v1,v2)":
+                    hideR('R=="onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,side1ctrl1(c,v1,v2))-push1(c,v1,v2),afterwards(x2-o2,v2,side1ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)");
+                    auto,
+                  "behindFocalPoint(c,x1-o1,x2-o2,v1,v2)":
+                    abbrv("x1-o1", "a1") ; abbrv("x2-o2", "a2") ; expand("afterwards") ; expand("push1") ; expand("push2");
+                    hideL('L=="a2=x2-o2");
+                    hideL('L=="a1=x1-o1");
+                    andR('R=="onSide1(c,a1,a2,v1,v2)&onSide1(c,a1+T()*(v1+p()*side1ctrl1(c,v1,v2))-T()*r()*((c*q(c,v1)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,-v2))/(q(c,v1)^2+q(c,v2)^2)),a2+T()*(v2+p()*side1ctrl2(c,v1,v2))-T()*r()*((c*q(c,v2)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,v1))/(q(c,v1)^2+q(c,v2)^2)),v1,v2)"); <(
+                      "onSide1(c,a1,a2,v1,v2)":
+                        hideL('L=="!inFrontOfBall(c,a1,a2,v1,v2)");
+                        QE,
+                      "onSide1(c,a1+T()*(v1+p()*side1ctrl1(c,v1,v2))-T()*r()*((c*q(c,v1)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,-v2))/(q(c,v1)^2+q(c,v2)^2)),a2+T()*(v2+p()*side1ctrl2(c,v1,v2))-T()*r()*((c*q(c,v2)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,v1))/(q(c,v1)^2+q(c,v2)^2)),v1,v2)":
+                        cut("a1+T()*(v1+p()*side1ctrl1(c,v1,v2))-T()*r()*((c*q(c,v1)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,-v2))/(q(c,v1)^2+q(c,v2)^2))=a1+T()*(v1+(p()-r())*side1ctrl1(c,v1,v2))"); <(
+                          "Use":
+                            cut("a2+T()*(v2+p()*side1ctrl2(c,v1,v2))-T()*r()*((c*q(c,v2)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,v1))/(q(c,v1)^2+q(c,v2)^2))=a2+T()*(v2+(p()-r())*side1ctrl2(c,v1,v2))"); <(
+                              "Use":
+                                expand("q");
+                                expand("side1ctrl2");
+                                expand("q");
+                                allL2R('L=="a2+T()*(v2+p()*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a2+T()*(v2+(p()-r())*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                                hideL('L=="a2+T()*(v2+p()*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a2+T()*(v2+(p()-r())*((c*(-c/(p()-r())*v2)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                                expand("side1ctrl1");
+                                expand("q");
+                                allL2R('L=="a1+T()*(v1+p()*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                                hideL('L=="a1+T()*(v1+p()*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)+((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                                hideL('L=="!inFrontOfBall(c,a1,a2,v1,v2)");
+                                auto,
+                              "Show":
+                                QE using "a2+T()*(v2+p()*side1ctrl2(c,v1,v2))-T()*r()*((c*q(c,v2)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,v1))/(q(c,v1)^2+q(c,v2)^2))=a2+T()*(v2+(p()-r())*side1ctrl2(c,v1,v2))"
+                            ),
+                          "Show":
+                            QE using "a1+T()*(v1+p()*side1ctrl1(c,v1,v2))-T()*r()*((c*q(c,v1)+(q(c,v1)^2+q(c,v2)^2-c^2)^(1/2)*q(c,-v2))/(q(c,v1)^2+q(c,v2)^2))=a1+T()*(v1+(p()-r())*side1ctrl1(c,v1,v2))"
+                        )
+                    )
+                )
+            )
+        )
+    ),
+  "[?!isInDir1(c,x1-o1,x2-o2,v1,v2);y1:=side2ctrl1(c,v1,v2);y2:=side2ctrl2(c,v1,v2);]controllerCondition(v1,v2,o1,o2,c,x1,x2,y1,y2)":
+    edit("!!inFrontOfBall(c,x1-o1,x2-o2,v1,v2)", 'R=="inFrontOfBall(c,x1-o1,x2-o2,v1,v2)");
+    edit("!!isInDir1(c,x1-o1,x2-o2,v1,v2)", 'R=="isInDir1(c,x1-o1,x2-o2,v1,v2)");
+    notR('R=="!!isInDir1(c,x1-o1,x2-o2,v1,v2)");
+    notR('R=="!!inFrontOfBall(c,x1-o1,x2-o2,v1,v2)");
+    expand("isInDir1");
+    notGreater('L=="!-v1*(x2-o2)+v2*(x1-o1)>0");
+    expand("controllerCondition");
+    expand("controllerConditionOrigin");
+    expand("obstacleCondition");
+    expand("obstacleConditionOrigin");
+    andL('L=="p() < r()+(v1^2+v2^2)^(1/2)&c>0&(onSide1(c,x1-o1,x2-o2,v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2))");
+    andL('L=="c>0&(onSide1(c,x1-o1,x2-o2,v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2))");
+    orL('L=="onSide1(c,x1-o1,x2-o2,v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)"); <(
+      "onSide1(c,x1-o1,x2-o2,v1,v2)":
+        andR('R=="side2ctrl1(c,v1,v2)^2+side2ctrl2(c,v1,v2)^2<=1&(onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-push1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)&onSide2(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-side2Push1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)&inFrontOfBall(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-frontPush1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)&behindFocalPoint(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-behindPush1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-behindPush2(c,v1,v2),v1,v2))"); <(
+          "side2ctrl1(c,v1,v2)^2+side2ctrl2(c,v1,v2)^2<=1":
+            hideL('L=="!inFrontOfBall(c,x1-o1,x2-o2,v1,v2)");
+            auto,
+          "onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-push1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)&onSide2(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-side2Push1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)&inFrontOfBall(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-frontPush1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)&behindFocalPoint(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-behindPush1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-behindPush2(c,v1,v2),v1,v2)":
+            orR('R=="onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-push1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)|onSide2(c,x1-o1,x2-o2,v1,v2)&onSide2(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-side2Push1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)&inFrontOfBall(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-frontPush1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)&behindFocalPoint(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-behindPush1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-behindPush2(c,v1,v2),v1,v2)");
+            orR('R=="onSide2(c,x1-o1,x2-o2,v1,v2)&onSide2(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-side2Push1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)&inFrontOfBall(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-frontPush1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)&behindFocalPoint(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-behindPush1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-behindPush2(c,v1,v2),v1,v2)");
+            hideR('R=="inFrontOfBall(c,x1-o1,x2-o2,v1,v2)&inFrontOfBall(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-frontPush1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)&behindFocalPoint(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-behindPush1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-behindPush2(c,v1,v2),v1,v2)");
+            hideR('R=="onSide1(c,x1-o1,x2-o2,v1,v2)&onSide1(c,afterwards(x1-o1,v1,side2ctrl1(c,v1,v2))-push1(c,v1,v2),afterwards(x2-o2,v2,side2ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)");
+            abbrv("x1-o1", "a1") ; abbrv("x2-o2", "a2") ; expand("afterwards");
+            cut("a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-side2Push1(c,v1,v2)=a1+T()*(v1+(p()-r())*side2ctrl1(c,v1,v2))"); <(
+              "Use":
+                expand("side2Push1");
+                expand("q");
+                expand("side2ctrl1");
+                expand("q");
+                allL2R('L=="a1+T()*(v1+p()*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                hideL('L=="a1+T()*(v1+p()*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                andR('R=="onSide2(c,a1,a2,v1,v2)&onSide2(c,a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-side2Push2(c,v1,v2),v1,v2)"); <(
+                  "onSide2(c,a1,a2,v1,v2)":
+                    hideL('L=="a2=x2-o2");
+                    hideL('L=="a1=x1-o1");
+                    hideL('L=="!inFrontOfBall(c,a1,a2,v1,v2)");
+                    auto,
+                  "onSide2(c,a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-side2Push2(c,v1,v2),v1,v2)":
+                    hideL('L=="a2=x2-o2");
+                    hideL('L=="a1=x1-o1");
+                    cut("a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-side2Push2(c,v1,v2)=a2+T()*(v2+(p()-r())*side2ctrl2(c,v1,v2))"); <(
+                      "Use":
+                        expand("side2Push2");
+                        expand("q");
+                        expand("side2ctrl2");
+                        expand("q");
+                        allL2R('L=="a2+T()*(v2+p()*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a2+T()*(v2+(p()-r())*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                        hideL('L=="a2+T()*(v2+p()*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a2+T()*(v2+(p()-r())*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                        hideL('L=="!inFrontOfBall(c,a1,a2,v1,v2)");
+                        QE,
+                      "Show":
+                        QE using "a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-side2Push2(c,v1,v2)=a2+T()*(v2+(p()-r())*side2ctrl2(c,v1,v2))"
+                    )
+                ),
+              "Show":
+                QE using "a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-side2Push1(c,v1,v2)=a1+T()*(v1+(p()-r())*side2ctrl1(c,v1,v2))"
+            )
+        ),
+      "onSide2(c,x1-o1,x2-o2,v1,v2)|inFrontOfBall(c,x1-o1,x2-o2,v1,v2)|behindFocalPoint(c,x1-o1,x2-o2,v1,v2)":
+        abbrv("x1-o1", "a1") ; abbrv("x2-o2", "a2") ; expand("afterwards");
+        andR('R=="side2ctrl1(c,v1,v2)^2+side2ctrl2(c,v1,v2)^2<=1&(onSide1(c,a1,a2,v1,v2)&onSide1(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-push1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)|onSide2(c,a1,a2,v1,v2)&onSide2(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-side2Push1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,a1,a2,v1,v2)&inFrontOfBall(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-frontPush1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,a1,a2,v1,v2)&behindFocalPoint(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-behindPush1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-behindPush2(c,v1,v2),v1,v2))"); <(
+          "side2ctrl1(c,v1,v2)^2+side2ctrl2(c,v1,v2)^2<=1":
+            hideL('L=="a2=x2-o2");
+            hideL('L=="a1=x1-o1");
+            hideL('L=="onSide2(c,a1,a2,v1,v2)|inFrontOfBall(c,a1,a2,v1,v2)|behindFocalPoint(c,a1,a2,v1,v2)");
+            QE,
+          "onSide1(c,a1,a2,v1,v2)&onSide1(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-push1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)|onSide2(c,a1,a2,v1,v2)&onSide2(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-side2Push1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,a1,a2,v1,v2)&inFrontOfBall(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-frontPush1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,a1,a2,v1,v2)&behindFocalPoint(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-behindPush1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-behindPush2(c,v1,v2),v1,v2)":
+            hideL('L=="a2=x2-o2");
+            hideL('L=="a1=x1-o1");
+            cut("a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-side2Push1(c,v1,v2)=a1+T()*(v1+(p()-r())*side2ctrl1(c,v1,v2))"); <(
+              "Use":
+                cut("a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-side2Push2(c,v1,v2)=a2+T()*(v2+(p()-r())*side2ctrl2(c,v1,v2))"); <(
+                  "Use":
+                    orR('R=="onSide1(c,a1,a2,v1,v2)&onSide1(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-push1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)|onSide2(c,a1,a2,v1,v2)&onSide2(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-side2Push1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,a1,a2,v1,v2)&inFrontOfBall(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-frontPush1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,a1,a2,v1,v2)&behindFocalPoint(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-behindPush1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-behindPush2(c,v1,v2),v1,v2)");
+                    orR('R=="onSide2(c,a1,a2,v1,v2)&onSide2(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-side2Push1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,a1,a2,v1,v2)&inFrontOfBall(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-frontPush1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,a1,a2,v1,v2)&behindFocalPoint(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-behindPush1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-behindPush2(c,v1,v2),v1,v2)");
+                    hideR('R=="onSide1(c,a1,a2,v1,v2)&onSide1(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-push1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)");
+                    hideR('R=="inFrontOfBall(c,a1,a2,v1,v2)&inFrontOfBall(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-frontPush1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,a1,a2,v1,v2)&behindFocalPoint(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-behindPush1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-behindPush2(c,v1,v2),v1,v2)");
+                    expand("side2Push2");
+                    expand("q");
+                    expand("side2ctrl2");
+                    expand("q");
+                    allL2R('L=="a2+T()*(v2+p()*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a2+T()*(v2+(p()-r())*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                    hideL('L=="a2+T()*(v2+p()*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a2+T()*(v2+(p()-r())*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                    expand("side2Push1");
+                    expand("q");
+                    expand("side2ctrl1");
+                    expand("q");
+                    allL2R('L=="a1+T()*(v1+p()*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                    hideL('L=="a1+T()*(v1+p()*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))-T()*r()*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))=a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2)))");
+                    orL('L=="onSide2(c,a1,a2,v1,v2)|inFrontOfBall(c,a1,a2,v1,v2)|behindFocalPoint(c,a1,a2,v1,v2)"); <(
+                      "onSide2(c,a1,a2,v1,v2)":
+                        andR('R=="onSide2(c,a1,a2,v1,v2)&onSide2(c,a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))),a2+T()*(v2+(p()-r())*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))),v1,v2)"); <(
+                          "onSide2(c,a1,a2,v1,v2)":
+                            auto,
+                          "onSide2(c,a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))),a2+T()*(v2+(p()-r())*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))),v1,v2)":
+                            hideL('L=="!inFrontOfBall(c,a1,a2,v1,v2)");
+                            hideL('L=="-v1*a2+v2*a1<=0");
+                            QE
+                        ),
+                      "inFrontOfBall(c,a1,a2,v1,v2)|behindFocalPoint(c,a1,a2,v1,v2)":
+                        orL('L=="inFrontOfBall(c,a1,a2,v1,v2)|behindFocalPoint(c,a1,a2,v1,v2)"); <(
+                          "inFrontOfBall(c,a1,a2,v1,v2)":
+                            hideR('R=="onSide2(c,a1,a2,v1,v2)&onSide2(c,a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))),a2+T()*(v2+(p()-r())*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))),v1,v2)");
+                            auto,
+                          "behindFocalPoint(c,a1,a2,v1,v2)":
+                            andR('R=="onSide2(c,a1,a2,v1,v2)&onSide2(c,a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))),a2+T()*(v2+(p()-r())*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))),v1,v2)"); <(
+                              "onSide2(c,a1,a2,v1,v2)":
+                                hideL('L=="!inFrontOfBall(c,a1,a2,v1,v2)");
+                                QE,
+                              "onSide2(c,a1+T()*(v1+(p()-r())*((c*(-c/(p()-r())*v1)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*(-v2)))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))),a2+T()*(v2+(p()-r())*((c*(-c/(p()-r())*v2)-((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2-c^2)^(1/2)*(-c/(p()-r())*v1))/((-c/(p()-r())*v1)^2+(-c/(p()-r())*v2)^2))),v1,v2)":
+                                hideL('L=="!inFrontOfBall(c,a1,a2,v1,v2)");
+                                QE
+                            )
+                        )
+                    ),
+                  "Show":
+                    QE using "a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-side2Push2(c,v1,v2)=a2+T()*(v2+(p()-r())*side2ctrl2(c,v1,v2))"
+                ),
+              "Show":
+                hideR('R=="onSide1(c,a1,a2,v1,v2)&onSide1(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-push1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-push2(c,v1,v2),v1,v2)|onSide2(c,a1,a2,v1,v2)&onSide2(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-side2Push1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-side2Push2(c,v1,v2),v1,v2)|inFrontOfBall(c,a1,a2,v1,v2)&inFrontOfBall(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-frontPush1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-frontPush2(c,v1,v2),v1,v2)|behindFocalPoint(c,a1,a2,v1,v2)&behindFocalPoint(c,a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-behindPush1(c,v1,v2),a2+T()*(v2+p()*side2ctrl2(c,v1,v2))-behindPush2(c,v1,v2),v1,v2)");
+                QE using "a1+T()*(v1+p()*side2ctrl1(c,v1,v2))-side2Push1(c,v1,v2)=a1+T()*(v1+(p()-r())*side2ctrl1(c,v1,v2))"
+            )
+        )
+    )
+)
+End.
+
+End.
